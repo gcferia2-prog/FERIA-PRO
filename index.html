@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>Ecos de Vuelo Rojo · Paraba Roja</title>
+
+  <!-- Leaflet CSS + Routing Machine -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    body {
+      background: #f6f6f4;
+      color: #2d2d2d;
+    }
+
+    /* Ocultar panel de instrucciones de ruta */
+    .leaflet-routing-container {
+      display: none !important;
+    }
+
+    /* NAV */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 40px;
+      background: white;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    nav h2 {
+      color: #c0392b;
+    }
+
+    nav ul {
+      display: flex;
+      gap: 20px;
+      list-style: none;
+      color: #555;
+    }
+
+    nav ul li {
+      cursor: pointer;
+      transition: color 0.3s ease;
+      padding: 5px 0;
+      border-bottom: 2px solid transparent;
+    }
+
+    nav ul li:hover {
+      color: #c0392b;
+      border-bottom: 2px solid #c0392b;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-login {
+      background: transparent;
+      color: #2d6a4f;
+      border: 2px solid #2d6a4f;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-login:hover {
+      background: #2d6a4f;
+      color: white;
+    }
+
+    .btn-register {
+      background: #2d6a4f;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-register:hover {
+      background: #1b4332;
+    }
+
+    /* HERO */
+    .hero {
+      height: 600px;
+      background: url('https://i.pinimg.com/736x/0b/d9/98/0bd998592e059ff646ef9dc61b49f8da.jpg') center/cover;
+      display: flex;
+      align-items: center;
+      padding: 80px;
+      color: white;
+      position: relative;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+    }
+
+    .hero-content {
+      position: relative;
+      max-width: 700px;
+    }
+
+    .hero h1 {
+      font-size: 3rem;
+      line-height: 1.2;
+      margin-bottom: 20px;
+    }
+
+    .hero span {
+      color: #ff4d4d;
+    }
+
+    .hero p {
+      margin: 20px 0;
+      font-size: 1.2rem;
+    }
+
+    .btn {
+      padding: 14px 24px;
+      border-radius: 8px;
+      border: none;
+      margin-right: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+    }
+
+    .btn-red {
+      background: #e63946;
+      color: white;
+    }
+
+    .btn-red:hover {
+      background: #c1121f;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 2px solid white;
+      color: white;
+    }
+
+    .btn-outline:hover {
+      background: white;
+      color: #2d2d2d;
+    }
+
+    /* CONTENEDOR PRINCIPAL */
+    .container {
+      padding: 30px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    /* CARDS */
+    .card {
+      background: white;
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    }
+
+    .card h3 {
+      margin-bottom: 15px;
+    }
+
+    /* MAPA CARD */
+    .map-card {
+      padding: 15px;
+    }
+
+    .map {
+      height: 250px;
+      width: 100%;
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* BOTONES SOBRE MAPA */
+    .map-buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .map-btn {
+      background: white;
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #1e1e1e;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+      background: #ffffff;
+    }
+
+    .map-btn i {
+      font-style: normal;
+      font-size: 1rem;
+    }
+
+    .map-btn.active {
+      background: #c0392b;
+      color: white;
+      border-color: #c0392b;
+      box-shadow: 0 4px 10px rgba(192, 57, 43, 0.3);
+    }
+
+    .map-btn:hover {
+      background: #f9f9f9;
+      border-color: #c0392b;
+    }
+
+    .map-btn.active:hover {
+      background: #b03227;
+    }
+
+    .btn-cancelar {
+      background: #e63946;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-cancelar:hover {
+      background: #c1121f;
+    }
+
+    /* PLACES */
+    .places {
+      display: flex;
+      gap: 10px;
+    }
+
+    .place {
+      flex: 1;
+      height: 90px;
+      background: #ddd;
+      border-radius: 10px;
+      transition: transform 0.3s ease;
+      cursor: pointer;
+    }
+
+    .place:hover {
+      transform: scale(1.05);
+    }
+
+    /* CLIMA CARD */
+    .weather-card {
+      position: relative;
+      overflow: hidden;
+      min-height: 250px;
+    }
+
+    .weather-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      transition: all 0.8s ease;
+      opacity: 0.15;
+    }
+
+    .weather-bg.sunny {
+      background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+    }
+    .weather-bg.cloudy {
+      background: linear-gradient(135deg, #bdc3c7 0%, #2c3e50 100%);
+    }
+    .weather-bg.rainy {
+      background: linear-gradient(135deg, #4b79a1 0%, #283e51 100%);
+    }
+    .weather-bg.night {
+      background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+    }
+    .weather-bg.snow {
+      background: linear-gradient(135deg, #e6dada 0%, #274046 100%);
+    }
+    .weather-bg.storm {
+      background: linear-gradient(135deg, #232526 0%, #414345 100%);
+    }
+
+    .weather-container {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 0;
+    }
+
+    .weather-icon {
+      font-size: 4rem;
+      margin-bottom: 15px;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .sun { font-size: 4.5rem; animation: rotate 20s linear infinite, pulse-glow 2s ease-in-out infinite; }
+    @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes pulse-glow { 0%,100%{ filter: drop-shadow(0 0 10px #ffa500); } 50%{ filter: drop-shadow(0 0 30px #ff8c00); } }
+
+    .cloud { animation: cloud-float 4s ease-in-out infinite; }
+    @keyframes cloud-float { 0%,100%{ transform: translateX(0px); } 50%{ transform: translateX(15px); } }
+    .rain { animation: rain-fall 1s linear infinite; }
+    @keyframes rain-fall { 0%{ transform: translateY(-5px); opacity:0.7; } 100%{ transform: translateY(5px); opacity:1; } }
+    .bolt { animation: flash 1.5s ease-in-out infinite; }
+    @keyframes flash { 0%,100%{ opacity:1; filter: drop-shadow(0 0 5px #ffd700); } 50%{ opacity:0.3; filter: drop-shadow(0 0 20px #ffed4a); } }
+    .moon { animation: moon-glow 3s ease-in-out infinite; }
+    @keyframes moon-glow { 0%,100%{ filter: drop-shadow(0 0 8px #f0e68c); } 50%{ filter: drop-shadow(0 0 20px #fffacd); } }
+
+    .weather-temp { font-size: 2.5rem; font-weight: bold; margin: 10px 0; }
+    .weather-desc { font-size: 1.1rem; text-transform: capitalize; margin-bottom: 5px; }
+    .weather-location { font-size: 0.9rem; color: #666; margin-top: 5px; }
+
+    .weather-details {
+      display: flex;
+      justify-content: space-around;
+      width: 100%;
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .weather-detail-item { text-align: center; font-size: 0.8rem; }
+    .weather-detail-item span { display: block; font-weight: bold; font-size: 1rem; margin-top: 5px; }
+
+    /* ALERTAS */
+    .alert {
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 8px;
+      transition: transform 0.3s ease;
+      cursor: pointer;
+    }
+    .alert:hover { transform: translateX(5px); }
+    .red { background: #fde2e2; }
+    .orange { background: #fff3cd; }
+    .green { background: #e0f7e9; }
+
+    /* LOADING SPINNER */
+    .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 0.6s linear infinite;
+      margin-right: 4px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* BOTTOM NAV MOBILE */
+    .bottom-nav { display: none; }
+
+    @media(max-width:768px) {
+      nav { display: none; }
+      .hero { height: 350px; padding: 30px; }
+      .hero h1 { font-size: 1.8rem; }
+      .hero p { font-size: 1rem; }
+      .btn { padding: 10px 16px; font-size: 0.9rem; }
+      .container { padding: 15px; }
+      .grid { display: flex; flex-direction: column; }
+      .card { border-radius: 18px; }
+      .map { height: 200px; }
+      .bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        justify-content: space-around;
+        padding: 12px 0;
+        box-shadow: 0 -3px 10px rgba(0,0,0,0.1);
+        z-index: 1000;
+      }
+      .bottom-nav div { font-size: 12px; text-align: center; cursor: pointer; transition: color 0.3s ease; }
+      .bottom-nav div:hover { color: #c0392b; }
+      body { padding-bottom: 80px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav>
+    <h2>Ecos de Vuelo Rojo</h2>
+    <ul>
+      <li onclick="scrollToSection('inicio')">Inicio</li>
+      <li onclick="scrollToSection('mapa')">Mapa</li>
+      <li onclick="scrollToSection('informacion')">Información</li>
+      <li onclick="scrollToSection('clima')">Clima</li>
+      <li onclick="scrollToSection('alertas')">Alertas</li>
+    </ul>
+    <div class="nav-buttons">
+      <button class="btn-login" onclick="iniciarSesion()">Iniciar sesión</button>
+      <button class="btn-register" onclick="registrarse()">Registrarse</button>
+    </div>
+  </nav>
+
+  <section class="hero" id="inicio">
+    <div class="hero-content">
+      <h1>Descubre y protege a la <span>Paraba Roja</span></h1>
+      <p>Explora su hábitat natural y ayuda a su conservación en Bolivia.</p>
+      <button class="btn btn-red" onclick="scrollToSection('mapa')">Explorar mapa</button>
+      <button class="btn btn-outline" onclick="scrollToSection('informacion')">Información del ave</button>
+    </div>
+  </section>
+
+  <div class="container">
+    <div class="grid">
+
+      <div class="card map-card" id="mapa">
+        <h3>🗺️ Mapa interactivo</h3>
+        <div class="map" id="map"></div>
+        <div class="map-buttons">
+          <button id="btnUbicacion" class="map-btn active"><i>📍</i> Tu ubicación</button>
+          <button id="btnAvistamientos" class="map-btn"><i>🐦</i> Avistamientos & Hábitats</button>
+          <button id="btnCancelar" class="btn-cancelar" onclick="cancelarRecorrido()"><i>✕</i> Cancelar recorrido</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Lugares destacados</h3>
+        <div class="places">
+          <div class="place"></div>
+          <div class="place"></div>
+          <div class="place"></div>
+        </div>
+      </div>
+
+      <div class="card weather-card" id="clima">
+        <div class="weather-bg" id="weatherBg"></div>
+        <div class="weather-container">
+          <div class="weather-icon" id="weatherIcon">🌤️</div>
+          <div class="weather-temp" id="temp">--°C</div>
+          <div class="weather-desc" id="desc">Cargando clima...</div>
+          <div class="weather-location" id="location"></div>
+          <div class="weather-details">
+            <div class="weather-detail-item">💧 Humedad <span id="humidity">--%</span></div>
+            <div class="weather-detail-item">💨 Viento <span id="wind">-- km/h</span></div>
+            <div class="weather-detail-item">👁️ Visibilidad <span id="visibility">-- km</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="alertas">
+        <h3>Alertas</h3>
+        <div class="alert red">Zona cerrada</div>
+        <div class="alert orange">Precaución</div>
+        <div class="alert green">Ruta habilitada</div>
+      </div>
+
+      <div class="card" id="informacion">
+        <h3>Información del ave</h3>
+        <p><strong>Paraba Roja (Ara rubrogenys)</strong><br>Especie endémica de Bolivia. Habita valles secos interandinos. En peligro crítico.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <div onclick="scrollToSection('inicio')">🏠<br>Inicio</div>
+    <div onclick="scrollToSection('mapa')">🗺️<br>Mapa</div>
+    <div onclick="scrollToSection('clima')">🌤️<br>Clima</div>
+    <div onclick="scrollToSection('alertas')">⚠️<br>Alertas</div>
+    <div onclick="iniciarSesion()">👤<br>Perfil</div>
+  </div>
+
+  <!-- Leaflet JS + Routing Machine -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.min.js"></script>
+
+  <script>
+    // NAVEGACIÓN
+    function scrollToSection(id) {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    function iniciarSesion() { alert('Iniciar sesión'); }
+    function registrarse() { alert('Registrarse'); }
+
+    // MAPA BASE
+    const map = L.map('map', { zoomControl: true, scrollWheelZoom: true }).setView([-17.7833, -63.1667], 7);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    // Referencias a botones
+    const btnUbicacion = document.getElementById('btnUbicacion');
+    const btnAvistamientos = document.getElementById('btnAvistamientos');
+    const btnCancelar = document.getElementById('btnCancelar');
+
+    // Icono personalizado para ubicación del usuario (estilo GPS)
+    const iconoUsuario = L.divIcon({
+      html: '<div style="position:relative;width:24px;height:24px;"><div style="position:absolute;top:0;left:0;width:24px;height:24px;background:#4285F4;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.4);"></div><div style="position:absolute;top:6px;left:6px;width:12px;height:12px;background:white;border-radius:50%;"></div></div>',
+      iconSize: [24, 24],
+      iconAnchor: [12, 12],
+      popupAnchor: [0, -12]
+    });
+
+    // Marcadores de avistamientos/hábitats
+    const habitats = [
+      { lat: -17.7833, lng: -63.1667, nombre: "Hábitat principal" },
+      { lat: -17.7530, lng: -63.1020, nombre: "Avistamiento frecuente" },
+      { lat: -17.8190, lng: -63.0400, nombre: "Zona de anidación" },
+      { lat: -17.6950, lng: -63.2100, nombre: "Avistamiento reportado" }
+    ];
+
+    const marcadoresHabitats = [];
+    habitats.forEach(h => {
+      const marker = L.marker([h.lat, h.lng]).addTo(map);
+      marker.bindPopup(`
+        <b>${h.nombre}</b><br>
+        <button class="iniciar-recorrido-btn" style="margin-top:6px;padding:6px 10px;background:#c0392b;color:white;border:none;border-radius:6px;cursor:pointer;" data-lat="${h.lat}" data-lng="${h.lng}">
+          Iniciar recorrido
+        </button>
+      `);
+      marker.on('popupopen', () => {
+        setTimeout(() => {
+          const btns = document.querySelectorAll('.iniciar-recorrido-btn');
+          btns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const lat = parseFloat(e.target.dataset.lat);
+              const lng = parseFloat(e.target.dataset.lng);
+              iniciarRecorrido(lat, lng);
+            });
+          });
+        }, 50);
+      });
+      marcadoresHabitats.push(marker);
+    });
+
+    // Variables de control
+    let markerUsuario = null;
+    let circuloPrecision = null;
+    let routingControl = null;
+    let watchId = null;
+    let destinoActual = null;
+
+    // Función para limpiar ruta
+    function limpiarRuta() {
+      if (routingControl) {
+        map.removeControl(routingControl);
+        routingControl = null;
+      }
+    }
+
+    // Cancelar recorrido
+    function cancelarRecorrido() {
+      limpiarRuta();
+      destinoActual = null;
+      btnCancelar.style.display = 'none';
+      btnCancelar.innerHTML = '<i>✕</i> Cancelar recorrido';
+    }
+
+    // Iniciar recorrido directo (solo línea, sin instrucciones)
+    function iniciarRecorrido(destLat, destLng) {
+      if (!markerUsuario) {
+        alert('Active primero su ubicación.');
+        return;
+      }
+
+      btnCancelar.style.display = 'flex';
+      btnCancelar.innerHTML = '<span class="spinner"></span> Calculando...';
+      
+      const userLatLng = markerUsuario.getLatLng();
+      limpiarRuta();
+      
+      routingControl = L.Routing.control({
+        waypoints: [
+          L.latLng(userLatLng.lat, userLatLng.lng),
+          L.latLng(destLat, destLng)
+        ],
+        routeWhileDragging: false,
+        showAlternatives: false,
+        addWaypoints: false,
+        lineOptions: { styles: [{ color: '#4285F4', weight: 5, opacity: 0.8 }] },
+        createMarker: function() { return null; },
+        // Ocultar todo el panel de instrucciones
+        show: false
+      }).addTo(map);
+
+      routingControl.on('routesfound', function(e) {
+        const route = e.routes[0];
+        const distancia = (route.summary.totalDistance / 1000).toFixed(1);
+        const tiempo = Math.round(route.summary.totalTime / 60);
+        
+        btnCancelar.innerHTML = '<i>✕</i> Cancelar recorrido';
+        destinoActual = { lat: destLat, lng: destLng };
+        
+        alert('Ruta directa\nDistancia: ' + distancia + ' km\nTiempo: ' + tiempo + ' min');
+      });
+
+      routingControl.on('routingerror', function() {
+        btnCancelar.innerHTML = '<i>✕</i> Cancelar recorrido';
+        alert('No se pudo calcular la ruta.');
+        cancelarRecorrido();
+      });
+    }
+
+    // Actualizar posición del marcador de usuario
+    function actualizarPosicionUsuario(lat, lng, precision) {
+      if (markerUsuario) {
+        markerUsuario.setLatLng([lat, lng]);
+        if (circuloPrecision) {
+          circuloPrecision.setLatLng([lat, lng]);
+          circuloPrecision.setRadius(precision || 10);
+        }
+      } else {
+        markerUsuario = L.marker([lat, lng], {
+          icon: iconoUsuario
+        }).addTo(map);
+
+        circuloPrecision = L.circle([lat, lng], {
+          radius: precision || 10,
+          color: '#4285F4',
+          fillColor: '#4285F4',
+          fillOpacity: 0.15,
+          weight: 1
+        }).addTo(map);
+      }
+
+      if (destinoActual) {
+        limpiarRuta();
+        routingControl = L.Routing.control({
+          waypoints: [
+            L.latLng(lat, lng),
+            L.latLng(destinoActual.lat, destinoActual.lng)
+          ],
+          routeWhileDragging: false,
+          showAlternatives: false,
+          addWaypoints: false,
+          lineOptions: { styles: [{ color: '#4285F4', weight: 5, opacity: 0.8 }] },
+          createMarker: function() { return null; },
+          show: false
+        }).addTo(map);
+      }
+    }
+
+    function activarUbicacion() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          const precision = pos.coords.accuracy;
+          actualizarPosicionUsuario(lat, lng, precision);
+          map.setView([lat, lng], 15);
+          obtenerClimaReal(lat, lng);
+        }, () => {
+          btnUbicacion.classList.remove('active');
+          alert('No se pudo acceder a la ubicación.');
+        }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+
+        watchId = navigator.geolocation.watchPosition(
+          (pos) => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            const precision = pos.coords.accuracy;
+            actualizarPosicionUsuario(lat, lng, precision);
+            obtenerClimaReal(lat, lng);
+          },
+          () => {},
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0, distanceFilter: 5 }
+        );
+      } else {
+        btnUbicacion.classList.remove('active');
+        alert('Geolocalización no soportada.');
+      }
+    }
+
+    function desactivarUbicacion() {
+      if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+      }
+      if (markerUsuario) {
+        map.removeLayer(markerUsuario);
+        markerUsuario = null;
+      }
+      if (circuloPrecision) {
+        map.removeLayer(circuloPrecision);
+        circuloPrecision = null;
+      }
+      cancelarRecorrido();
+    }
+
+    btnUbicacion.addEventListener('click', function() {
+      this.classList.toggle('active');
+      if (this.classList.contains('active')) {
+        activarUbicacion();
+      } else {
+        desactivarUbicacion();
+      }
+    });
+
+    btnAvistamientos.addEventListener('click', function() {
+      this.classList.toggle('active');
+      if (this.classList.contains('active')) {
+        if (marcadoresHabitats.length > 0) {
+          const grupo = L.featureGroup(marcadoresHabitats);
+          map.fitBounds(grupo.getBounds().pad(0.2));
+        }
+      } else {
+        marcadoresHabitats.forEach(m => map.removeLayer(m));
+        marcadoresHabitats.length = 0;
+      }
+    });
+
+    window.addEventListener('resize', () => map.invalidateSize());
+    setTimeout(() => map.invalidateSize(), 200);
+
+    // Activar ubicación por defecto
+    activarUbicacion();
+
+    // ========== CLIMA ==========
+    function actualizarDisenoClima(data) {
+      const weatherId = data.weather[0].id;
+      const iconEl = document.getElementById('weatherIcon');
+      const bgEl = document.getElementById('weatherBg');
+      const isDay = data.dt > data.sys.sunrise && data.dt < data.sys.sunset;
+      bgEl.className = 'weather-bg';
+      iconEl.className = 'weather-icon';
+
+      if (weatherId >= 200 && weatherId < 300) {
+        bgEl.classList.add('storm'); iconEl.innerHTML = '⛈️'; iconEl.classList.add('bolt');
+      } else if (weatherId >= 300 && weatherId < 600) {
+        bgEl.classList.add('rainy'); iconEl.innerHTML = '🌧️'; iconEl.classList.add('rain');
+      } else if (weatherId >= 600 && weatherId < 700) {
+        bgEl.classList.add('snow'); iconEl.innerHTML = '🌨️'; iconEl.classList.add('cloud');
+      } else if (weatherId >= 700 && weatherId < 800) {
+        bgEl.classList.add('cloudy'); iconEl.innerHTML = '🌫️'; iconEl.classList.add('cloud');
+      } else if (weatherId === 800) {
+        if (isDay) { bgEl.classList.add('sunny'); iconEl.innerHTML = '☀️'; iconEl.classList.add('sun'); }
+        else { bgEl.classList.add('night'); iconEl.innerHTML = '🌙'; iconEl.classList.add('moon'); }
+      } else {
+        bgEl.classList.add('cloudy'); iconEl.innerHTML = '☁️'; iconEl.classList.add('cloud');
+      }
+    }
+
+    function obtenerClimaReal(lat, lon) {
+      const API_KEY = 'bd5e378503939ddaee76f12ad7a97685';
+      fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&lang=es&appid=${API_KEY}`)
+        .then(r => r.json())
+        .then(data => {
+          document.getElementById("temp").innerText = Math.round(data.main.temp) + "°C";
+          document.getElementById("desc").innerText = data.weather[0].description;
+          document.getElementById("location").innerText = '📍 ' + data.name + ", " + data.sys.country;
+          document.getElementById("humidity").innerText = data.main.humidity + "%";
+          document.getElementById("wind").innerText = Math.round(data.wind.speed * 3.6) + " km/h";
+          document.getElementById("visibility").innerText = (data.visibility / 1000).toFixed(1) + " km";
+          actualizarDisenoClima(data);
+        })
+        .catch(() => {
+          document.getElementById("temp").innerText = "28°C";
+          document.getElementById("desc").innerText = "parcialmente nublado";
+        });
+    }
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => obtenerClimaReal(pos.coords.latitude, pos.coords.longitude),
+        () => obtenerClimaReal(-17.7833, -63.1667)
+      );
+    } else {
+      obtenerClimaReal(-17.7833, -63.1667);
+    }
+  </script>
+</body>
+</html>
