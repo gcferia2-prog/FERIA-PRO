@@ -172,7 +172,7 @@
       font-size: 1.8rem;
       font-weight: 800;
     }
-    .modal input {
+    .modal input, .modal textarea, .modal select {
       width: 100%;
       padding: 14px 16px;
       margin: 10px 0;
@@ -181,12 +181,17 @@
       font-size: 0.95rem;
       transition: var(--transition);
       background: var(--gray-100);
+      font-family: 'Inter', sans-serif;
     }
-    .modal input:focus {
+    .modal input:focus, .modal textarea:focus, .modal select:focus {
       outline: none;
       border-color: var(--accent);
       background: white;
       box-shadow: 0 0 0 4px rgba(230, 57, 70, 0.1);
+    }
+    .modal textarea {
+      resize: vertical;
+      min-height: 80px;
     }
     .modal button {
       width: 100%;
@@ -224,6 +229,17 @@
       transform: translateY(-2px);
       box-shadow: var(--shadow-md);
     }
+    .modal .btn-ubicacion {
+      background: var(--info);
+      margin-top: 8px;
+    }
+    .modal .btn-ubicacion:hover {
+      background: #3a6b8a;
+    }
+    .modal .btn-ubicacion:disabled {
+      background: var(--gray-400);
+      cursor: not-allowed;
+    }
     .modal .link {
       text-align: center;
       margin-top: 20px;
@@ -260,6 +276,21 @@
     .close-modal:hover {
       background: var(--gray-200);
       color: var(--gray-800);
+    }
+    .ubicacion-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: var(--radius);
+      margin: 8px 0;
+      font-size: 0.85rem;
+      color: var(--success);
+    }
+    .ubicacion-info i {
+      font-size: 1rem;
     }
 
     /* Spinner */
@@ -566,14 +597,12 @@
       margin: 0 auto;
     }
     
-    /* GRID PRINCIPAL PARA PC - 3 COLUMNAS */
     .grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 24px;
     }
     
-    /* Elementos de ancho completo */
     .full-width {
       grid-column: 1 / -1;
     }
@@ -681,7 +710,7 @@
       box-shadow: var(--shadow);
     }
 
-    /* Places - 3 TARJETAS EN FILA HORIZONTAL */
+    /* Places */
     .places-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -864,6 +893,88 @@
       margin-top: 4px;
     }
 
+    /* Avistamientos Card */
+    .avistamientos-list {
+      max-height: 350px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .avistamiento-item {
+      padding: 16px;
+      background: var(--gray-100);
+      border-radius: var(--radius);
+      transition: var(--transition);
+      border-left: 4px solid var(--accent);
+    }
+    .avistamiento-item:hover {
+      background: white;
+      box-shadow: var(--shadow);
+      transform: translateX(4px);
+    }
+    .avistamiento-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+    .avistamiento-user {
+      font-weight: 600;
+      color: var(--primary);
+      font-size: 0.9rem;
+    }
+    .avistamiento-fecha {
+      font-size: 0.75rem;
+      color: var(--gray-500);
+    }
+    .avistamiento-especie {
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .avistamiento-desc {
+      color: var(--gray-600);
+      font-size: 0.85rem;
+      margin-top: 4px;
+    }
+    .avistamiento-cantidad {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+    .btn-registrar-avistamiento {
+      width: 100%;
+      padding: 12px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: var(--transition);
+      margin-top: 16px;
+    }
+    .btn-registrar-avistamiento:hover {
+      background: var(--accent-hover);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    .btn-registrar-avistamiento:disabled {
+      background: var(--gray-400);
+      cursor: not-allowed;
+    }
+    .btn-registrar-avistamiento:disabled:hover {
+      transform: none;
+      box-shadow: none;
+    }
+
     /* Alert boxes */
     .alert-box {
       padding: 16px;
@@ -928,7 +1039,25 @@
       display: none;
     }
 
-    /* RESPONSIVE DESIGN - SOLO PARA MÓVIL */
+    /* Mobile Profile Modal */
+    .mobile-profile-section {
+      padding: 20px;
+      text-align: center;
+    }
+    .mobile-profile-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+      color: white;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: 700;
+    }
+
+    /* RESPONSIVE DESIGN */
     @media (max-width: 1024px) {
       nav {
         padding: 12px 24px;
@@ -967,7 +1096,6 @@
         height: 250px;
       }
       
-      /* Places mobile optimization */
       .places-grid {
         grid-template-columns: 1fr;
         gap: 12px;
@@ -980,6 +1108,10 @@
       
       .place-card-name {
         font-size: 1.2rem;
+      }
+      
+      .avistamientos-list {
+        max-height: 300px;
       }
       
       .weather-details {
@@ -1051,11 +1183,11 @@
   <div class="modal-overlay" id="modalOverlay"><div class="modal" id="modalContent"></div></div>
 
   <nav>
-    <h2>Ecos de Vuelo Rojo</h2>
+    <h2>🦜 Ecos de Vuelo Rojo</h2>
     <ul>
       <li onclick="scrollToSection('inicio')"><i class="fas fa-home"></i> Inicio</li>
       <li onclick="scrollToSection('mapa')"><i class="fas fa-map-marked-alt"></i> Mapa</li>
-      <li onclick="scrollToSection('clima')"><i class="fas fa-cloud-sun"></i> Clima</li>
+      <li onclick="scrollToSection('avistamientos')"><i class="fas fa-feather"></i> Avistamientos</li>
       <li onclick="scrollToSection('alertas')"><i class="fas fa-exclamation-triangle"></i> Alertas</li>
     </ul>
     <div class="nav-buttons" id="navButtons">
@@ -1068,6 +1200,7 @@
         <div class="dropdown-header"><strong id="dropdownName">Usuario</strong><small id="dropdownEmail"></small></div>
         <div class="dropdown-item" onclick="verPerfil()"><i class="fas fa-user-circle"></i> Mi Perfil</div>
         <div class="dropdown-item" onclick="misFavoritos()"><i class="fas fa-star"></i> Mis Favoritos</div>
+        <div class="dropdown-item" onclick="misAvistamientos()"><i class="fas fa-feather"></i> Mis Avistamientos</div>
         <div class="dropdown-divider"></div>
         <div class="dropdown-item" onclick="cerrarSesion()" style="color:#dc3545;"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</div>
       </div>
@@ -1086,7 +1219,7 @@
   <div class="container">
     <div class="grid">
 
-      <!-- MAPA - Columna izquierda -->
+      <!-- MAPA -->
       <div class="card" id="mapa">
         <h3><i class="fas fa-map-marked-alt"></i> Mapa interactivo</h3>
         <div class="map" id="map"></div>
@@ -1097,8 +1230,19 @@
         </div>
       </div>
 
-      <!-- CLIMA - Columna derecha -->
-      <div class="card weather-card" id="clima">
+      <!-- AVISTAMIENTOS -->
+      <div class="card" id="avistamientos">
+        <h3><i class="fas fa-feather"></i> Avistamientos recientes</h3>
+        <div class="avistamientos-list" id="avistamientosList">
+          <p style="text-align:center;color:var(--gray-500);">Cargando avistamientos...</p>
+        </div>
+        <button class="btn-registrar-avistamiento" id="btnRegistrarAvistamiento" onclick="abrirModalRegistrarAvistamiento()">
+          <i class="fas fa-plus-circle"></i> Registrar avistamiento
+        </button>
+      </div>
+
+      <!-- CLIMA -->
+      <div class="card weather-card full-width" id="clima">
         <div class="weather-bg" id="weatherBg"></div>
         <div class="weather-container">
           <div class="weather-icon" id="weatherIcon">🌤️</div>
@@ -1113,19 +1257,19 @@
         </div>
       </div>
 
-      <!-- LUGARES DESTACADOS - Ancho completo, 3 tarjetas en fila -->
+      <!-- LUGARES DESTACADOS -->
       <div class="card full-width" id="lugares">
         <h3><i class="fas fa-landmark"></i> Lugares destacados</h3>
         <div class="places-grid" id="placesContainer"></div>
       </div>
 
-      <!-- ALERTAS - Columna izquierda -->
+      <!-- ALERTAS -->
       <div class="card" id="alertas">
         <h3><i class="fas fa-exclamation-triangle"></i> Alertas ambientales</h3>
         <div id="alertasContainer"></div>
       </div>
 
-      <!-- INFORMACIÓN - Columna derecha -->
+      <!-- INFORMACIÓN -->
       <div class="card" id="info">
         <h3><i class="fas fa-info-circle"></i> Información del ave</h3>
         <p style="margin-bottom: 16px;"><strong style="color: var(--accent);">Paraba Roja (Ara rubrogenys)</strong></p>
@@ -1141,12 +1285,13 @@
     </div>
   </div>
 
+  <!-- Barra de navegación inferior SOLO PARA MÓVIL -->
   <div class="bottom-nav">
     <div onclick="scrollToSection('inicio')"><i class="fas fa-home"></i> Inicio</div>
     <div onclick="scrollToSection('mapa')"><i class="fas fa-map-marked-alt"></i> Mapa</div>
-    <div onclick="scrollToSection('clima')"><i class="fas fa-cloud-sun"></i> Clima</div>
+    <div onclick="scrollToSection('avistamientos')"><i class="fas fa-feather"></i> Avistamientos</div>
     <div onclick="scrollToSection('alertas')"><i class="fas fa-exclamation-triangle"></i> Alertas</div>
-    <div onclick="document.getElementById('btnLoginNav').click()"><i class="fas fa-user"></i> Perfil</div>
+    <div id="bottomProfileBtn" onclick="handleBottomProfileClick()"><i class="fas fa-user"></i> Perfil</div>
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -1163,6 +1308,7 @@
     let map, markerUsuario, circuloPrecision, routingControl, watchId, destinoActual;
     let marcadoresHabitats = [];
     let ubicacionActual = { lat: -17.7833, lng: -63.1667 };
+    let ubicacionDetectada = null; // Para el formulario de avistamiento
 
     // ========== SESIÓN ==========
     function cargarSesion() { 
@@ -1184,9 +1330,11 @@
     }
 
     function actualizarUI() {
-      const navB = document.getElementById('navButtons'),
-        userM = document.getElementById('userMenu'),
-        avatar = document.getElementById('userAvatar');
+      const navB = document.getElementById('navButtons');
+      const userM = document.getElementById('userMenu');
+      const avatar = document.getElementById('userAvatar');
+      const bottomProfileBtn = document.getElementById('bottomProfileBtn');
+      
       if (currentUser) {
         navB.style.display = 'none';
         userM.style.display = 'block';
@@ -1195,10 +1343,64 @@
         avatar.textContent = n.charAt(0).toUpperCase();
         document.getElementById('dropdownName').textContent = n;
         document.getElementById('dropdownEmail').textContent = currentUser.email || '';
+        
+        if (bottomProfileBtn) {
+          bottomProfileBtn.innerHTML = '<i class="fas fa-user-circle"></i> ' + n.split(' ')[0];
+          bottomProfileBtn.onclick = () => abrirModalPerfilMobile();
+        }
       } else {
         navB.style.display = 'flex';
         userM.style.display = 'none';
         avatar.style.display = 'none';
+        
+        if (bottomProfileBtn) {
+          bottomProfileBtn.innerHTML = '<i class="fas fa-user"></i> Perfil';
+          bottomProfileBtn.onclick = () => abrirModal('login');
+        }
+      }
+      
+      actualizarBotonAvistamiento();
+    }
+    
+    function abrirModalPerfilMobile() {
+      if (!currentUser) {
+        abrirModal('login');
+        return;
+      }
+      const u = currentUser;
+      const c = document.getElementById('modalContent');
+      c.innerHTML = `<button class="close-modal" onclick="cerrarModal()"><i class="fas fa-times"></i></button>
+        <div class="mobile-profile-section">
+          <div class="mobile-profile-avatar">${(u.nombre||'U').charAt(0).toUpperCase()}</div>
+          <h3 style="margin-top:15px;">${u.nombre||'Usuario'}</h3>
+          <p style="color:#888;">${u.email||''}</p>
+          <p style="color:#888;">@${u.usuario||''}</p>
+        </div>
+        <button onclick="cerrarModal();misFavoritos();" style="background:var(--info);"><i class="fas fa-star"></i> Mis Favoritos</button>
+        <button onclick="cerrarModal();misAvistamientos();" style="background:var(--info);"><i class="fas fa-feather"></i> Mis Avistamientos</button>
+        <button onclick="cerrarModal();cerrarSesion();" style="background:#dc3545;"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</button>`;
+      document.getElementById('modalOverlay').classList.add('active');
+    }
+    
+    function handleBottomProfileClick() {
+      if (currentUser) {
+        abrirModalPerfilMobile();
+      } else {
+        abrirModal('login');
+      }
+    }
+    
+    function actualizarBotonAvistamiento() {
+      const btn = document.getElementById('btnRegistrarAvistamiento');
+      if (!btn) return;
+      if (!currentUser) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-lock"></i> Inicia sesión para registrar avistamientos';
+        btn.style.opacity = '0.7';
+      } else {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-plus-circle"></i> Registrar avistamiento';
+        btn.style.opacity = '1';
       }
     }
 
@@ -1224,12 +1426,45 @@
         const u = currentUser || {};
         c.innerHTML = `<button class="close-modal" onclick="cerrarModal()"><i class="fas fa-times"></i></button><h2>Mi Perfil</h2>
         <div style="text-align:center;padding:20px;"><div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-hover));color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:2rem;font-weight:700;">${(u.nombre||'U').charAt(0).toUpperCase()}</div>
-        <h3 style="margin-top:15px;">${u.nombre||'Usuario'}</h3><p style="color:#888;">${u.email||''} · @${u.usuario||''}</p></div>`;
+        <h3 style="margin-top:15px;">${u.nombre||'Usuario'}</h3><p style="color:#888;">${u.email||''} · @${u.usuario||''}</p>
+        <button onclick="cerrarSesion()" style="background:#dc3545;margin-top:20px;"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</button></div>`;
       } else if (tipo === 'favoritos') {
         c.innerHTML = `<button class="close-modal" onclick="cerrarModal()"><i class="fas fa-times"></i></button><h2>Mis Favoritos</h2><div id="favoritosListContent"><p style="text-align:center;color:#888;">Cargando...</p></div>`;
         cargarFavoritosModal();
+      } else if (tipo === 'misAvistamientos') {
+        c.innerHTML = `<button class="close-modal" onclick="cerrarModal()"><i class="fas fa-times"></i></button><h2>Mis Avistamientos</h2><div id="misAvistamientosContent"><p style="text-align:center;color:#888;">Cargando...</p></div>`;
+        cargarMisAvistamientosModal();
+      } else if (tipo === 'registrarAvistamiento') {
+        c.innerHTML = `<button class="close-modal" onclick="cerrarModal()"><i class="fas fa-times"></i></button><h2>Registrar Avistamiento</h2>
+        <select id="avistEspecie">
+          <option value="Paraba Roja">Paraba Roja (Ara rubrogenys)</option>
+          <option value="Paraba Frente Roja">Paraba Frente Roja</option>
+          <option value="Paraba Azul">Paraba Azul</option>
+          <option value="Guacamayo Verde">Guacamayo Verde</option>
+          <option value="Otra especie">Otra especie</option>
+        </select>
+        <button class="btn-ubicacion" id="btnUsarUbicacion" onclick="usarUbicacionActual()"><i class="fas fa-map-marker-alt"></i> Usar ubicación actual</button>
+        <div id="ubicacionInfo" style="display:none;"></div>
+        <input type="text" id="avistLugar" placeholder="Lugar del avistamiento">
+        <input type="text" id="avistCiudad" placeholder="Ciudad / Departamento">
+        <input type="hidden" id="avistLatitud">
+        <input type="hidden" id="avistLongitud">
+        <input type="number" id="avistCantidad" placeholder="Cantidad de aves avistadas" min="1" value="1">
+        <input type="date" id="avistFecha">
+        <textarea id="avistDescripcion" placeholder="Descripción del avistamiento (opcional)"></textarea>
+        <button onclick="registrarAvistamiento()"><i class="fas fa-feather"></i> Registrar avistamiento</button>`;
+        document.getElementById('avistFecha').value = new Date().toISOString().split('T')[0];
       }
       document.getElementById('modalOverlay').classList.add('active');
+    }
+
+    function abrirModalRegistrarAvistamiento() {
+      if (!currentUser) {
+        abrirModal('login');
+        return;
+      }
+      ubicacionDetectada = null;
+      abrirModal('registrarAvistamiento');
     }
 
     function cerrarModal() { 
@@ -1240,26 +1475,130 @@
       if (e.target === e.currentTarget) cerrarModal(); 
     });
 
+    // ========== USAR UBICACIÓN ACTUAL EN FORMULARIO ==========
+    function usarUbicacionActual() {
+      const btn = document.getElementById('btnUsarUbicacion');
+      if (!btn) return;
+      
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Obteniendo ubicación...';
+      
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          async (pos) => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            
+            document.getElementById('avistLatitud').value = lat;
+            document.getElementById('avistLongitud').value = lng;
+            
+            // Obtener dirección con Nominatim
+            try {
+              const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
+              const geoData = await response.json();
+              
+              const address = geoData.address || {};
+              const lugar = address.road || address.neighbourhood || address.suburb || '';
+              const ciudad = address.city || address.town || address.village || address.state || '';
+              const departamento = address.state || '';
+              
+              document.getElementById('avistLugar').value = lugar || 'Ubicación actual';
+              document.getElementById('avistCiudad').value = [ciudad, departamento].filter(Boolean).join(', ') || 'Bolivia';
+              
+              const infoDiv = document.getElementById('ubicacionInfo');
+              infoDiv.style.display = 'block';
+              infoDiv.className = 'ubicacion-info';
+              infoDiv.innerHTML = `<i class="fas fa-check-circle"></i> Ubicación detectada: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+              
+              ubicacionDetectada = { lat, lng };
+            } catch (err) {
+              document.getElementById('avistLugar').value = 'Ubicación actual';
+              document.getElementById('avistCiudad').value = 'Bolivia';
+              
+              const infoDiv = document.getElementById('ubicacionInfo');
+              infoDiv.style.display = 'block';
+              infoDiv.className = 'ubicacion-info';
+              infoDiv.innerHTML = `<i class="fas fa-check-circle"></i> Coordenadas: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+              
+              ubicacionDetectada = { lat, lng };
+            }
+            
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-map-marker-alt"></i> Usar ubicación actual';
+            mostrarToast('¡Ubicación detectada!', 'success');
+          },
+          (error) => {
+            console.error('Error GPS:', error);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-map-marker-alt"></i> Usar ubicación actual';
+            mostrarToast('No se pudo acceder a la ubicación. Verifica los permisos.', 'error');
+          },
+          { enableHighAccuracy: true, timeout: 10000 }
+        );
+      } else {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-map-marker-alt"></i> Usar ubicación actual';
+        mostrarToast('Geolocalización no soportada', 'error');
+      }
+    }
+
     // ========== AUTH ==========
     async function iniciarSesion() {
       const usuario = document.getElementById('loginUsuario')?.value?.trim();
       const password = document.getElementById('loginPassword')?.value;
+      
       if (!usuario || !password) { 
         mostrarToast('Completa todos los campos', 'error'); 
         return; 
       }
+      
       mostrarSpinner(true);
-      const { data, error } = await sb.rpc('verificar_login', { p_usuario: usuario, p_password: password });
-      if (error || !data || data.length === 0) { 
-        mostrarToast('Usuario o contraseña incorrectos', 'error');
-        mostrarSpinner(false); 
-        return; 
+      
+      try {
+        const { data, error } = await sb
+          .from('login')
+          .select('*')
+          .or(`email.eq.${usuario},usuario.eq.${usuario}`)
+          .limit(1);
+        
+        if (error) {
+          console.error('Error en consulta:', error);
+          mostrarToast('Error de conexión con la base de datos', 'error');
+          mostrarSpinner(false);
+          return;
+        }
+        
+        if (!data || data.length === 0) {
+          mostrarToast('Usuario o contraseña incorrectos', 'error');
+          mostrarSpinner(false);
+          return;
+        }
+        
+        const user = data[0];
+        
+        if (user.password !== password) {
+          mostrarToast('Usuario o contraseña incorrectos', 'error');
+          mostrarSpinner(false);
+          return;
+        }
+        
+        currentUser = {
+          id: user.id,
+          nombre: user.nombre,
+          email: user.email,
+          usuario: user.usuario
+        };
+        
+        guardarSesion();
+        actualizarUI();
+        cerrarModal();
+        mostrarToast('¡Bienvenido, ' + currentUser.nombre + '!', 'success');
+        cargarAvistamientos();
+      } catch (err) {
+        console.error('Error inesperado:', err);
+        mostrarToast('Error inesperado. Intenta de nuevo.', 'error');
       }
-      currentUser = data[0];
-      guardarSesion();
-      actualizarUI();
-      cerrarModal();
-      mostrarToast('¡Bienvenido, ' + currentUser.nombre + '!', 'success');
+      
       mostrarSpinner(false);
     }
 
@@ -1268,6 +1607,7 @@
       const email = document.getElementById('regEmail')?.value?.trim();
       const usuario = document.getElementById('regUsuario')?.value?.trim();
       const password = document.getElementById('regPassword')?.value;
+      
       if (!nombre || !email || !usuario || !password) { 
         mostrarToast('Completa todos los campos', 'error'); 
         return; 
@@ -1276,20 +1616,39 @@
         mostrarToast('Contraseña mín. 6 caracteres', 'error'); 
         return; 
       }
+      
       mostrarSpinner(true);
-      const { data: existe } = await sb.from('login').select('id').or(`email.eq.${email},usuario.eq.${usuario}`).limit(1);
-      if (existe && existe.length > 0) { 
-        mostrarToast('El email o usuario ya existe', 'error');
-        mostrarSpinner(false); 
-        return; 
+      
+      try {
+        const { data: existe } = await sb
+          .from('login')
+          .select('id')
+          .or(`email.eq.${email},usuario.eq.${usuario}`)
+          .limit(1);
+        
+        if (existe && existe.length > 0) { 
+          mostrarToast('El email o usuario ya existe', 'error');
+          mostrarSpinner(false); 
+          return; 
+        }
+        
+        const { error } = await sb
+          .from('login')
+          .insert({ nombre, email, usuario, password });
+        
+        if (error) { 
+          console.error('Error al registrar:', error);
+          mostrarToast('Error al registrar: ' + error.message, 'error'); 
+        } else { 
+          cerrarModal();
+          mostrarToast('¡Cuenta creada! Ya puedes iniciar sesión', 'success');
+          abrirModal('login');
+        }
+      } catch (err) {
+        console.error('Error inesperado:', err);
+        mostrarToast('Error inesperado. Intenta de nuevo.', 'error');
       }
-      const { error } = await sb.from('login').insert({ nombre, email, usuario, password });
-      if (error) { 
-        mostrarToast('Error: ' + error.message, 'error'); 
-      } else { 
-        cerrarModal();
-        mostrarToast('¡Cuenta creada! Ya puedes iniciar sesión', 'success'); 
-      }
+      
       mostrarSpinner(false);
     }
 
@@ -1298,7 +1657,9 @@
       limpiarSesion();
       actualizarUI();
       document.getElementById('dropdown').classList.remove('active');
-      mostrarToast('Sesión cerrada', 'info'); 
+      cerrarModal();
+      mostrarToast('Sesión cerrada', 'info');
+      cargarAvistamientos();
     }
 
     function verPerfil() { 
@@ -1318,8 +1679,184 @@
       }
       abrirModal('favoritos'); 
     }
+    
+    function misAvistamientos() {
+      document.getElementById('dropdown').classList.remove('active'); 
+      if (!currentUser) { 
+        abrirModal('login'); 
+        return; 
+      }
+      abrirModal('misAvistamientos'); 
+    }
 
-    // ========== CLIMA CON OPEN-METEO (GRATIS, SIN API KEY) ==========
+    // ========== AVISTAMIENTOS ==========
+    async function cargarAvistamientos() {
+      const container = document.getElementById('avistamientosList');
+      if (!container) return;
+      container.innerHTML = '<p style="text-align:center;color:var(--gray-500);">Cargando avistamientos...</p>';
+      
+      try {
+        const { data, error } = await sb
+          .from('avistamientos')
+          .select('id, especie, cantidad, lugar, ciudad, descripcion, fecha_avistamiento, created_at, user_id, login(nombre, usuario)')
+          .order('created_at', { ascending: false })
+          .limit(10);
+        
+        if (error) {
+          console.error('Error cargando avistamientos:', error);
+          container.innerHTML = '<p style="text-align:center;color:var(--gray-500);">Error al cargar avistamientos</p>';
+          return;
+        }
+        
+        const avistamientos = data || [];
+        
+        if (avistamientos.length === 0) {
+          container.innerHTML = '<div style="text-align:center;padding:20px;"><i class="fas fa-feather" style="font-size:3rem;color:var(--gray-400);"></i><p style="color:var(--gray-500);margin-top:12px;">No hay avistamientos registrados</p><p style="color:var(--gray-400);font-size:0.85rem;">¡Sé el primero en registrar uno!</p></div>';
+          return;
+        }
+        
+        container.innerHTML = avistamientos.map(a => {
+          const nombreUsuario = a.login?.nombre || a.login?.usuario || 'Usuario anónimo';
+          const fecha = new Date(a.fecha_avistamiento || a.created_at).toLocaleDateString('es-BO', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+          });
+          
+          return `
+            <div class="avistamiento-item">
+              <div class="avistamiento-header">
+                <span class="avistamiento-user"><i class="fas fa-user-circle"></i> ${nombreUsuario}</span>
+                <span class="avistamiento-fecha"><i class="fas fa-calendar"></i> ${fecha}</span>
+              </div>
+              <div class="avistamiento-especie"><i class="fas fa-feather"></i> ${a.especie}</div>
+              ${a.lugar || a.ciudad ? `<div style="font-size:0.85rem;color:var(--gray-600);margin-top:4px;"><i class="fas fa-map-pin"></i> ${[a.lugar, a.ciudad].filter(Boolean).join(', ')}</div>` : ''}
+              ${a.descripcion ? `<div class="avistamiento-desc">${a.descripcion.substring(0, 100)}${a.descripcion.length > 100 ? '...' : ''}</div>` : ''}
+              <span class="avistamiento-cantidad"><i class="fas fa-dove"></i> ${a.cantidad} ${a.cantidad == 1 ? 'ave' : 'aves'}</span>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error('Error:', err);
+        container.innerHTML = '<p style="text-align:center;color:var(--gray-500);">Error al cargar avistamientos</p>';
+      }
+    }
+    
+    async function registrarAvistamiento() {
+      if (!currentUser) {
+        mostrarToast('Debes iniciar sesión primero', 'error');
+        return;
+      }
+      
+      const especie = document.getElementById('avistEspecie')?.value;
+      const lugar = document.getElementById('avistLugar')?.value?.trim();
+      const ciudad = document.getElementById('avistCiudad')?.value?.trim();
+      const cantidad = parseInt(document.getElementById('avistCantidad')?.value) || 1;
+      const fecha = document.getElementById('avistFecha')?.value;
+      const descripcion = document.getElementById('avistDescripcion')?.value?.trim();
+      const latitud = document.getElementById('avistLatitud')?.value || null;
+      const longitud = document.getElementById('avistLongitud')?.value || null;
+      
+      if (!especie) {
+        mostrarToast('Selecciona una especie', 'error');
+        return;
+      }
+      if (!lugar && !ciudad) {
+        mostrarToast('Indica al menos el lugar o ciudad', 'error');
+        return;
+      }
+      if (!fecha) {
+        mostrarToast('Selecciona una fecha', 'error');
+        return;
+      }
+      
+      mostrarSpinner(true);
+      
+      try {
+        const { error } = await sb.from('avistamientos').insert({
+          user_id: currentUser.id,
+          especie: especie,
+          cantidad: cantidad,
+          lugar: lugar || null,
+          ciudad: ciudad || null,
+          descripcion: descripcion || null,
+          fecha_avistamiento: fecha,
+          latitud: latitud ? parseFloat(latitud) : null,
+          longitud: longitud ? parseFloat(longitud) : null
+        });
+        
+        if (error) {
+          console.error('Error registrando avistamiento:', error);
+          mostrarToast('Error al registrar: ' + error.message, 'error');
+        } else {
+          cerrarModal();
+          mostrarToast('¡Avistamiento registrado con éxito!', 'success');
+          cargarAvistamientos();
+        }
+      } catch (err) {
+        console.error('Error:', err);
+        mostrarToast('Error al registrar avistamiento', 'error');
+      }
+      
+      mostrarSpinner(false);
+    }
+    
+    async function cargarMisAvistamientosModal() {
+      if (!currentUser) return;
+      
+      try {
+        const { data, error } = await sb
+          .from('avistamientos')
+          .select('*')
+          .eq('user_id', currentUser.id)
+          .order('created_at', { ascending: false });
+        
+        const container = document.getElementById('misAvistamientosContent');
+        if (!container) return;
+        
+        if (error) {
+          container.innerHTML = '<p style="text-align:center;color:#888;">Error al cargar tus avistamientos</p>';
+          return;
+        }
+        
+        const avistamientos = data || [];
+        
+        if (avistamientos.length === 0) {
+          container.innerHTML = '<div style="text-align:center;padding:20px;"><i class="fas fa-feather" style="font-size:3rem;color:var(--gray-400);"></i><p style="color:#888;margin-top:12px;">No has registrado avistamientos</p></div>';
+          return;
+        }
+        
+        container.innerHTML = avistamientos.map(a => {
+          const fecha = new Date(a.fecha_avistamiento || a.created_at).toLocaleDateString('es-BO', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          });
+          
+          return `
+            <div style="padding:16px;background:var(--gray-100);border-radius:var(--radius);margin:10px 0;border-left:4px solid var(--accent);">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                <strong style="color:var(--accent);">${a.especie}</strong>
+                <small style="color:var(--gray-500);">${fecha}</small>
+              </div>
+              <div style="margin-top:8px;font-size:0.9rem;color:var(--gray-600);">
+                <i class="fas fa-map-pin"></i> ${[a.lugar, a.ciudad].filter(Boolean).join(', ') || 'Sin ubicación'}
+              </div>
+              <div style="margin-top:4px;">
+                <span style="background:var(--accent);color:white;padding:2px 10px;border-radius:12px;font-size:0.8rem;font-weight:600;">
+                  <i class="fas fa-dove"></i> ${a.cantidad} ${a.cantidad == 1 ? 'ave' : 'aves'}
+                </span>
+              </div>
+              ${a.descripcion ? `<p style="margin-top:8px;font-size:0.85rem;color:var(--gray-700);">${a.descripcion}</p>` : ''}
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error('Error:', err);
+      }
+    }
+
+    // ========== CLIMA ==========
     function obtenerClimaPorCoordenadas(lat, lon) {
       const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto`;
       
@@ -1337,51 +1874,22 @@
             let icono = '';
             let bgClass = '';
             
-            if (code === 0) {
-              descripcion = 'Despejado';
-              icono = '☀️';
-              bgClass = 'sunny';
-            } else if (code >= 1 && code <= 3) {
-              descripcion = 'Parcialmente nublado';
-              icono = '⛅';
-              bgClass = 'cloudy';
-            } else if (code >= 45 && code <= 48) {
-              descripcion = 'Niebla';
-              icono = '🌫️';
-              bgClass = 'cloudy';
-            } else if (code >= 51 && code <= 55) {
-              descripcion = 'Llovizna';
-              icono = '🌦️';
-              bgClass = 'rainy';
-            } else if (code >= 61 && code <= 65) {
-              descripcion = 'Lluvia';
-              icono = '🌧️';
-              bgClass = 'rainy';
-            } else if (code >= 71 && code <= 77) {
-              descripcion = 'Nieve';
-              icono = '🌨️';
-              bgClass = 'rainy';
-            } else if (code >= 80 && code <= 82) {
-              descripcion = 'Lluvia fuerte';
-              icono = '⛈️';
-              bgClass = 'rainy';
-            } else if (code >= 95 && code <= 99) {
-              descripcion = 'Tormenta';
-              icono = '⛈️';
-              bgClass = 'rainy';
-            } else {
-              descripcion = 'Variable';
-              icono = '🌤️';
-              bgClass = 'cloudy';
-            }
+            if (code === 0) { descripcion = 'Despejado'; icono = '☀️'; bgClass = 'sunny'; }
+            else if (code >= 1 && code <= 3) { descripcion = 'Parcialmente nublado'; icono = '⛅'; bgClass = 'cloudy'; }
+            else if (code >= 45 && code <= 48) { descripcion = 'Niebla'; icono = '🌫️'; bgClass = 'cloudy'; }
+            else if (code >= 51 && code <= 55) { descripcion = 'Llovizna'; icono = '🌦️'; bgClass = 'rainy'; }
+            else if (code >= 61 && code <= 65) { descripcion = 'Lluvia'; icono = '🌧️'; bgClass = 'rainy'; }
+            else if (code >= 71 && code <= 77) { descripcion = 'Nieve'; icono = '🌨️'; bgClass = 'rainy'; }
+            else if (code >= 80 && code <= 82) { descripcion = 'Lluvia fuerte'; icono = '⛈️'; bgClass = 'rainy'; }
+            else if (code >= 95 && code <= 99) { descripcion = 'Tormenta'; icono = '⛈️'; bgClass = 'rainy'; }
+            else { descripcion = 'Variable'; icono = '🌤️'; bgClass = 'cloudy'; }
             
             document.getElementById("desc").innerText = descripcion;
             document.getElementById("weatherIcon").innerHTML = icono;
             
             const bg = document.getElementById('weatherBg');
-            bg.className = 'weather-bg ' + bgClass;
+            if (bg) bg.className = 'weather-bg ' + bgClass;
             
-            // Geocodificación inversa
             fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&addressdetails=1`)
               .then(r => r.json())
               .then(geoData => {
@@ -1399,9 +1907,6 @@
         })
         .catch(error => {
           console.error('Error obteniendo clima:', error);
-          document.getElementById("temp").innerText = "--°C";
-          document.getElementById("desc").innerText = "Error al cargar";
-          document.getElementById("location").innerHTML = '<i class="fas fa-map-marker-alt"></i> Sin conexión';
         });
     }
 
@@ -1580,7 +2085,7 @@
           navigator.geolocation.getCurrentPosition(pos => { 
             actualizarPosicion(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy); 
             map.setView([pos.coords.latitude, pos.coords.longitude], 15); 
-            obtenerClimaPorCoordenadas(pos.coords.latitude, pos.coords.longitude); 
+            obtenerClimaPorCoordenadas(pos.coords.latitude, pos.coords.longitude);
           }, () => {
             mostrarToast('No se pudo acceder a la ubicación', 'error'); 
             obtenerClimaPorCoordenadas(ubicacionActual.lat, ubicacionActual.lng);
@@ -1593,45 +2098,28 @@
       }
       
       function desactivarUbicacion() { 
-        if (watchId) { 
-          navigator.geolocation.clearWatch(watchId); 
-          watchId = null; 
-        } 
-        if (markerUsuario) { 
-          map.removeLayer(markerUsuario); 
-          markerUsuario = null; 
-        } 
-        if (circuloPrecision) { 
-          map.removeLayer(circuloPrecision); 
-          circuloPrecision = null; 
-        } 
+        if (watchId) { navigator.geolocation.clearWatch(watchId); watchId = null; } 
+        if (markerUsuario) { map.removeLayer(markerUsuario); markerUsuario = null; } 
+        if (circuloPrecision) { map.removeLayer(circuloPrecision); circuloPrecision = null; } 
         cancelarRecorrido(); 
       }
       
       function cancelarRecorrido() { 
-        if (routingControl) { 
-          map.removeControl(routingControl); 
-          routingControl = null; 
-        } 
+        if (routingControl) { map.removeControl(routingControl); routingControl = null; } 
         destinoActual = null; 
         document.getElementById('btnCancelar').style.display = 'none'; 
       }
       
       function iniciarRecorrido(destLat, destLng) {
-        if (!markerUsuario) { 
-          mostrarToast('Activa tu ubicación primero', 'error'); 
-          return; 
-        }
+        if (!markerUsuario) { mostrarToast('Activa tu ubicación primero', 'error'); return; }
         document.getElementById('btnCancelar').style.display = 'inline-flex'; 
         const ul = markerUsuario.getLatLng(); 
         cancelarRecorrido();
         routingControl = L.Routing.control({ 
           waypoints: [L.latLng(ul.lat, ul.lng), L.latLng(destLat, destLng)], 
-          routeWhileDragging: false, 
-          showAlternatives: false, 
+          routeWhileDragging: false, showAlternatives: false, 
           lineOptions: { styles: [{ color: '#e63946', weight: 5 }] }, 
-          createMarker: () => null, 
-          show: false 
+          createMarker: () => null, show: false 
         }).addTo(map);
         routingControl.on('routesfound', e => { 
           destinoActual = { lat: destLat, lng: destLng }; 
@@ -1641,10 +2129,7 @@
       
       window.iniciarRecorrido = iniciarRecorrido;
       window.addEventListener('resize', () => map?.invalidateSize());
-      setTimeout(() => { 
-        map?.invalidateSize(); 
-        activarUbicacion(); 
-      }, 500);
+      setTimeout(() => { map?.invalidateSize(); activarUbicacion(); }, 500);
     }
 
     // ========== UTILS ==========
@@ -1682,6 +2167,7 @@
       } 
     });
 
+    // Exponer funciones globalmente
     window.abrirModal = abrirModal; 
     window.cerrarModal = cerrarModal; 
     window.iniciarSesion = iniciarSesion;
@@ -1689,9 +2175,16 @@
     window.cerrarSesion = cerrarSesion; 
     window.verPerfil = verPerfil;
     window.misFavoritos = misFavoritos; 
+    window.misAvistamientos = misAvistamientos;
     window.scrollToSection = scrollToSection; 
     window.mostrarToast = mostrarToast;
     window.navegarAUbicacion = navegarAUbicacion;
+    window.registrarAvistamiento = registrarAvistamiento;
+    window.abrirModalRegistrarAvistamiento = abrirModalRegistrarAvistamiento;
+    window.toggleDropdown = toggleDropdown;
+    window.handleBottomProfileClick = handleBottomProfileClick;
+    window.usarUbicacionActual = usarUbicacionActual;
+    window.abrirModalPerfilMobile = abrirModalPerfilMobile;
 
     // ========== INIT ==========
     document.addEventListener('DOMContentLoaded', async () => {
@@ -1701,6 +2194,7 @@
       cargarSesion(); 
       actualizarUI();
       
+      await cargarAvistamientos();
       await cargarAlertas(); 
       await cargarLugaresDestacados();
       
