@@ -293,12 +293,12 @@
       right: 0;
       z-index: 100;
       background: transparent;
-      padding: calc(8px + var(--safe-top)) 16px 8px;
+      padding: calc(6px + var(--safe-top)) 16px 6px;
       display: flex; 
       align-items: center; 
       justify-content: space-between;
       gap: 12px;
-      min-height: 56px;
+      min-height: 50px;
       transition: var(--transition);
     }
     .mobile-header.scrolled {
@@ -313,12 +313,12 @@
       backdrop-filter: none;
       border-bottom: none;
       box-shadow: none;
-      padding: calc(8px + var(--safe-top)) 16px 4px;
-      min-height: 48px;
+      padding: calc(6px + var(--safe-top)) 16px 4px;
+      min-height: 44px;
     }
     
     .mobile-header-title {
-      font-size: 1rem; 
+      font-size: 0.95rem; 
       font-weight: 800; 
       color: white;
       display: flex; 
@@ -336,13 +336,13 @@
     }
     .mobile-header-title svg { 
       color: var(--accent); 
-      width: 20px; 
-      height: 20px; 
+      width: 18px; 
+      height: 18px; 
       flex-shrink: 0; 
     }
     .mobile-header.map-header .mobile-header-title svg {
-      width: 18px;
-      height: 18px;
+      width: 16px;
+      height: 16px;
     }
     .mobile-header-title span {
       white-space: nowrap;
@@ -350,12 +350,12 @@
       text-overflow: ellipsis;
     }
     .mobile-header.map-header .mobile-header-title span {
-      font-size: 0.9rem;
+      font-size: 0.85rem;
     }
     
     .mobile-header-btn {
-      width: 40px; 
-      height: 40px; 
+      width: 36px; 
+      height: 36px; 
       border-radius: 50%;
       background: rgba(255,255,255,0.2); 
       backdrop-filter: blur(10px);
@@ -378,8 +378,8 @@
       transform: scale(0.9); 
     }
     .mobile-header-btn svg {
-      width: 20px;
-      height: 20px;
+      width: 18px;
+      height: 18px;
       color: white;
       transition: var(--transition);
     }
@@ -405,22 +405,23 @@
     /* Bottom Navigation - Flotante */
     .mobile-bottom-nav {
       position: fixed; 
-      bottom: calc(30px + var(--safe-bottom));
+      bottom: calc(12px + var(--safe-bottom));
       left: 50%;
       transform: translateX(-50%);
       background: rgba(255,255,255,0.95); 
       backdrop-filter: blur(20px);
       border: 1px solid var(--border);
-      border-radius: 30px;
+      border-radius: 25px;
       display: flex; 
       justify-content: space-around; 
       align-items: center;
-      padding: 8px;
+      padding: 4px;
       z-index: 1000; 
-      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
-      width: calc(100% - 32px);
-      max-width: 400px;
-      gap: 4px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+      width: calc(100% - 40px);
+      max-width: 360px;
+      gap: 2px;
+      height: 56px;
     }
     .mobile-nav-item {
       display: flex; 
@@ -428,25 +429,25 @@
       align-items: center; 
       justify-content: center;
       gap: 2px;
-      font-size: 10px; 
+      font-size: 9px; 
       cursor: pointer; 
       color: #999; 
       transition: var(--transition);
-      padding: 8px 12px; 
-      border-radius: 22px;
+      padding: 4px 8px; 
+      border-radius: 20px;
       flex: 1;
       position: relative;
-      min-height: 50px;
+      min-height: 44px;
     }
     .mobile-nav-item svg { 
-      width: 22px; 
-      height: 22px;
+      width: 20px; 
+      height: 20px;
       transition: var(--transition);
     }
     .mobile-nav-item span {
-      font-size: 9px;
+      font-size: 8px;
       font-weight: 600;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.2px;
     }
     .mobile-nav-item.active { 
       color: var(--accent);
@@ -454,25 +455,28 @@
     }
     .mobile-nav-item:active { transform: scale(0.9); }
 
-    /* Carousel - Sube hasta la barra de estado */
+    /* Carousel - Ahora comienza debajo del header */
     .carousel-container {
       position: relative; 
       width: 100%;
-      height: 45vh;
-      height: 45dvh;
-      min-height: 300px;
-      max-height: 400px;
+      height: 40vh;
+      height: 40dvh;
+      min-height: 280px;
+      max-height: 380px;
       overflow: hidden; 
       box-shadow: none;
       margin: 0;
-      margin-top: calc(-1 * var(--safe-top));
-      padding-top: var(--safe-top);
+      padding-top: calc(50px + var(--safe-top));
     }
     .carousel-slides {
       display: flex; 
       width: 100%; 
-      height: 100%;
+      height: calc(100% - 50px - var(--safe-top));
       transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      margin-top: calc(50px + var(--safe-top));
+      position: absolute;
+      top: 0;
+      left: 0;
     }
     .carousel-slide {
       min-width: 100%; 
@@ -492,29 +496,29 @@
     .carousel-content {
       position: relative; 
       z-index: 1; 
-      padding: 24px; 
+      padding: 20px; 
       color: white;
       width: 100%;
     }
     .carousel-content h2 {
-      font-size: 1.3rem; 
+      font-size: 1.2rem; 
       font-weight: 900; 
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
     .carousel-content p {
-      font-size: 0.85rem; 
+      font-size: 0.8rem; 
       opacity: 0.9; 
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
     .carousel-content .btn-explore {
-      padding: 10px 20px; 
+      padding: 8px 16px; 
       background: var(--accent); 
       color: white;
       border: none; 
-      border-radius: 25px; 
+      border-radius: 20px; 
       font-weight: 700; 
       cursor: pointer;
-      font-size: 0.8rem; 
+      font-size: 0.75rem; 
       transition: var(--transition);
       box-shadow: 0 4px 15px rgba(230, 57, 70, 0.4);
     }
@@ -522,17 +526,17 @@
     
     .carousel-dots {
       position: absolute; 
-      bottom: 16px; 
+      bottom: 12px; 
       left: 0; 
       right: 0;
       display: flex; 
       justify-content: center; 
-      gap: 8px; 
+      gap: 6px; 
       z-index: 2;
     }
     .carousel-dot {
-      width: 8px; 
-      height: 8px; 
+      width: 6px; 
+      height: 6px; 
       border-radius: 50%;
       background: rgba(255,255,255,0.5); 
       cursor: pointer; 
@@ -540,8 +544,8 @@
     }
     .carousel-dot.active { 
       background: white; 
-      width: 24px; 
-      border-radius: 4px; 
+      width: 20px; 
+      border-radius: 3px; 
     }
 
     /* Cards */
@@ -646,7 +650,7 @@
       padding: 0 16px;
       align-items: center;
       position: fixed;
-      bottom: calc(95px + var(--safe-bottom));
+      bottom: calc(80px + var(--safe-bottom));
       left: 0;
       right: 0;
       z-index: 10;
@@ -654,12 +658,12 @@
     }
     .map-control-btn {
       flex: 1;
-      padding: 14px;
+      padding: 12px;
       border-radius: 50px;
       border: 1px solid rgba(255,255,255,0.3);
       font-weight: 600;
       cursor: pointer;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -687,8 +691,8 @@
       background: rgba(255,255,255,0.95);
     }
     .map-control-btn svg {
-      width: 16px;
-      height: 16px;
+      width: 14px;
+      height: 14px;
     }
 
     /* Buttons */
@@ -881,7 +885,7 @@
         </button>
       </div>
 
-      <!-- Carousel que sube hasta la barra de estado -->
+      <!-- Carousel que comienza debajo del header -->
       <div class="carousel-container" id="carouselContainer">
         <div class="carousel-slides" id="carouselSlides">
           <div class="carousel-slide" style="background-image: url('https://cdn.sanity.io/images/71jmx9y3/production/f535cedc31a2607ca5d44499f2f8c9a4c865d79a-2260x3243.jpg?auto=format&fit=max&q=75&rect=0,0,2260,1306&w=1130')">
@@ -983,7 +987,7 @@
           <span>Avistamientos</span>
         </div>
       </div>
-      <div style="height: calc(56px + var(--safe-top));"></div>
+      <div style="height: calc(50px + var(--safe-top));"></div>
       <div class="mobile-card">
         <div id="mAvistamientosList">
           <p style="text-align:center;color:#999;">Cargando avistamientos...</p>
@@ -997,7 +1001,7 @@
       </div>
     </div>
 
-    <!-- Bottom Navigation - Flotante más abajo -->
+    <!-- Bottom Navigation - Flotante -->
     <div class="mobile-bottom-nav">
       <div class="mobile-nav-item active" onclick="mobileNavigate('mViewInicio')" id="mNavInicio">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
