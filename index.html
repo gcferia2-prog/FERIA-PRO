@@ -54,6 +54,11 @@
       position: relative;
     }
 
+    /* Ocultar controles de zoom del mapa */
+    .leaflet-control-zoom {
+      display: none !important;
+    }
+
     /* ============ TOAST ============ */
     .toast {
       position: fixed; 
@@ -274,7 +279,7 @@
       display: block;
       min-height: 100vh;
       background: var(--bg);
-      padding-bottom: calc(120px + var(--safe-bottom));
+      padding-bottom: calc(140px + var(--safe-bottom));
       width: 100%;
       max-width: 100vw;
       overflow-x: hidden;
@@ -303,7 +308,6 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     }
     
-    /* Header del mapa - Más compacto */
     .mobile-header.map-header {
       background: transparent;
       backdrop-filter: none;
@@ -401,7 +405,7 @@
     /* Bottom Navigation - Flotante */
     .mobile-bottom-nav {
       position: fixed; 
-      bottom: calc(20px + var(--safe-bottom)); 
+      bottom: calc(30px + var(--safe-bottom));
       left: 50%;
       transform: translateX(-50%);
       background: rgba(255,255,255,0.95); 
@@ -450,7 +454,7 @@
     }
     .mobile-nav-item:active { transform: scale(0.9); }
 
-    /* Carousel - Más pequeño */
+    /* Carousel - Sube hasta la barra de estado */
     .carousel-container {
       position: relative; 
       width: 100%;
@@ -461,6 +465,8 @@
       overflow: hidden; 
       box-shadow: none;
       margin: 0;
+      margin-top: calc(-1 * var(--safe-top));
+      padding-top: var(--safe-top);
     }
     .carousel-slides {
       display: flex; 
@@ -640,7 +646,7 @@
       padding: 0 16px;
       align-items: center;
       position: fixed;
-      bottom: calc(85px + var(--safe-bottom));
+      bottom: calc(95px + var(--safe-bottom));
       left: 0;
       right: 0;
       z-index: 10;
@@ -875,7 +881,7 @@
         </button>
       </div>
 
-      <!-- Carousel -->
+      <!-- Carousel que sube hasta la barra de estado -->
       <div class="carousel-container" id="carouselContainer">
         <div class="carousel-slides" id="carouselSlides">
           <div class="carousel-slide" style="background-image: url('https://cdn.sanity.io/images/71jmx9y3/production/f535cedc31a2607ca5d44499f2f8c9a4c865d79a-2260x3243.jpg?auto=format&fit=max&q=75&rect=0,0,2260,1306&w=1130')">
@@ -949,7 +955,7 @@
         </div>
       </div>
 
-      <!-- Controles flotantes sobre el mapa (un poco más arriba) -->
+      <!-- Controles flotantes sobre el mapa -->
       <div class="map-controls">
         <button class="map-control-btn primary" id="mBtnUbicacion">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -991,7 +997,7 @@
       </div>
     </div>
 
-    <!-- Bottom Navigation - Flotante -->
+    <!-- Bottom Navigation - Flotante más abajo -->
     <div class="mobile-bottom-nav">
       <div class="mobile-nav-item active" onclick="mobileNavigate('mViewInicio')" id="mNavInicio">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1018,9 +1024,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
-    // ... (todo el JavaScript se mantiene igual que en la versión anterior)
-    // No lo repito aquí para ahorrar espacio, pero es idéntico al código anterior
-    
     const SUPABASE_URL = 'https://tawdvbekatpszlwiekzr.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_H38vzEeo__eHO6M_yWR4HA_H-Uyz0kx';
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -1034,6 +1037,7 @@
     let carouselIndex = 0;
     let carouselInterval;
 
+    // ============ NAVEGACIÓN ============
     function mobileNavigate(view) {
       currentMView = view;
       document.querySelectorAll('.mobile-view').forEach(v => v.classList.remove('active'));
@@ -1056,6 +1060,7 @@
       }
     }
 
+    // ============ PROFILE DRAWER ============
     function openProfileDrawer() {
       const drawer = document.getElementById('profileDrawer');
       const overlay = document.getElementById('profileDrawerOverlay');
@@ -1121,6 +1126,7 @@
       document.getElementById('profileDrawerOverlay').classList.remove('active');
     }
 
+    // ============ SESIÓN ============
     function cargarSesion() { 
       const s = localStorage.getItem('paraba_user'); 
       if (s) { currentUser = JSON.parse(s); return true; } 
@@ -1129,6 +1135,7 @@
     function guardarSesion() { if (currentUser) localStorage.setItem('paraba_user', JSON.stringify(currentUser)); }
     function limpiarSesion() { localStorage.removeItem('paraba_user'); }
 
+    // ============ MODALES ============
     function abrirModal(tipo) {
       let html = '';
       if (tipo === 'login') {
@@ -1272,6 +1279,7 @@
       }
     }
 
+    // ============ AUTENTICACIÓN ============
     async function iniciarSesion() {
       const usuario = document.getElementById('loginUsuario')?.value?.trim();
       const password = document.getElementById('loginPassword')?.value;
@@ -1350,6 +1358,7 @@
       currentUser ? abrirModal('misAvistamientos') : abrirModal('login'); 
     }
 
+    // ============ CARGAR DATOS ============
     async function cargarAvistamientosMobile() {
       const container = document.getElementById('mAvistamientosList');
       if (!container) return;
@@ -1538,8 +1547,14 @@
       mostrarSpinner(false);
     }
 
+    // ============ MAPA ============
     function initMMap() {
-      mMap = L.map('mMap', { zoomControl: true, scrollWheelZoom: true }).setView([ubicacionActual.lat, ubicacionActual.lng], 7);
+      mMap = L.map('mMap', { 
+        zoomControl: false,
+        scrollWheelZoom: true,
+        attributionControl: false
+      }).setView([ubicacionActual.lat, ubicacionActual.lng], 7);
+      
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(mMap);
       
       const iconoUsuario = L.divIcon({
@@ -1592,6 +1607,7 @@
       });
     }
 
+    // ============ CLIMA ============
     function obtenerClima(lat, lon) {
       fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto`)
         .then(r => r.json())
@@ -1640,6 +1656,7 @@
       if (mMap) mMap.setView([lat, lng], 15);
     }
 
+    // ============ UTILIDADES ============
     function mostrarToast(msg, tipo = 'info') {
       const t = document.getElementById('toast');
       t.textContent = msg;
@@ -1652,6 +1669,7 @@
       document.getElementById('spinnerOverlay').classList.toggle('active', s);
     }
 
+    // ============ CARRUSEL ============
     function initCarousel() {
       const slides = document.getElementById('carouselSlides');
       const dotsContainer = document.getElementById('carouselDots');
