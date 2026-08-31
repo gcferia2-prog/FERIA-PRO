@@ -404,26 +404,27 @@
       to { opacity: 1; transform: translateX(0); } 
     }
 
-    /* Bottom Navigation - MUY ABAJO */
+    /* Bottom Navigation - PEGADA AL BORDE INFERIOR */
     .mobile-bottom-nav {
       position: fixed; 
-      bottom: calc(5px + var(--safe-bottom));
+      bottom: 0;
       left: 50%;
       transform: translateX(-50%);
       background: rgba(255,255,255,0.95); 
       backdrop-filter: blur(20px);
       border: 1px solid var(--border);
-      border-radius: 20px;
+      border-radius: 20px 20px 0 0;
       display: flex; 
       justify-content: space-around; 
       align-items: center;
-      padding: 6px;
+      padding: 8px;
       z-index: 1000; 
-      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
-      width: calc(100% - 24px);
-      max-width: 340px;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.12);
+      width: 100%;
+      max-width: 100%;
       gap: 2px;
-      height: 60px;
+      height: 65px;
+      padding-bottom: calc(8px + var(--safe-bottom));
     }
     .mobile-nav-item {
       display: flex; 
@@ -1000,7 +1001,7 @@
       </div>
     </div>
 
-    <!-- Bottom Navigation - MUY ABAJO -->
+    <!-- Bottom Navigation - PEGADA AL BORDE INFERIOR -->
     <div class="mobile-bottom-nav">
       <div class="mobile-nav-item active" onclick="mobileNavigate('mViewInicio')" id="mNavInicio">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
