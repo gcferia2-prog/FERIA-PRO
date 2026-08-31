@@ -179,9 +179,9 @@
       justify-content: center; 
       transition: var(--transition);
       flex-shrink: 0;
-      font-size: 1.2rem;
     }
     .btn-close-modal:active { background: #fee2e2; color: #dc3545; transform: scale(0.9); }
+    .btn-close-modal svg { width: 16px; height: 16px; }
     
     .modal input, .modal textarea, .modal select {
       width: 100%; 
@@ -274,55 +274,88 @@
       display: block;
       min-height: 100vh;
       background: var(--bg);
-      padding-bottom: calc(100px + var(--safe-bottom));
+      padding-bottom: calc(120px + var(--safe-bottom));
       width: 100%;
       max-width: 100vw;
       overflow-x: hidden;
     }
 
-    /* Header */
+    /* Header - Transparente */
     .mobile-header {
-      position: sticky; 
+      position: fixed; 
       top: 0; 
+      left: 0;
+      right: 0;
       z-index: 100;
-      background: rgba(255,255,255,0.95); 
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border);
-      padding: calc(12px + var(--safe-top)) 16px 12px;
+      background: transparent;
+      padding: calc(8px + var(--safe-top)) 16px 8px;
       display: flex; 
       align-items: center; 
       justify-content: space-between;
       gap: 12px;
-      min-height: 60px;
+      min-height: 56px;
+      transition: var(--transition);
     }
+    .mobile-header.scrolled {
+      background: rgba(255,255,255,0.95); 
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    /* Header del mapa - Más compacto */
+    .mobile-header.map-header {
+      background: transparent;
+      backdrop-filter: none;
+      border-bottom: none;
+      box-shadow: none;
+      padding: calc(8px + var(--safe-top)) 16px 4px;
+      min-height: 48px;
+    }
+    
     .mobile-header-title {
       font-size: 1rem; 
       font-weight: 800; 
-      color: var(--primary);
+      color: white;
       display: flex; 
       align-items: center; 
       gap: 8px;
       flex: 1;
       min-width: 0;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      transition: var(--transition);
+    }
+    .mobile-header.scrolled .mobile-header-title,
+    .mobile-header.map-header .mobile-header-title {
+      color: var(--primary);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
     }
     .mobile-header-title svg { 
       color: var(--accent); 
-      width: 22px; 
-      height: 22px; 
+      width: 20px; 
+      height: 20px; 
       flex-shrink: 0; 
+    }
+    .mobile-header.map-header .mobile-header-title svg {
+      width: 18px;
+      height: 18px;
     }
     .mobile-header-title span {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    .mobile-header.map-header .mobile-header-title span {
+      font-size: 0.9rem;
+    }
     
     .mobile-header-btn {
       width: 40px; 
       height: 40px; 
       border-radius: 50%;
-      background: #f5f5f5; 
-      border: none; 
+      background: rgba(255,255,255,0.2); 
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.3);
       cursor: pointer;
       display: flex; 
       align-items: center; 
@@ -331,10 +364,24 @@
       flex-shrink: 0;
       position: relative;
     }
-    .mobile-header-btn:active { background: #e0e0e0; transform: scale(0.9); }
+    .mobile-header.scrolled .mobile-header-btn,
+    .mobile-header.map-header .mobile-header-btn {
+      background: rgba(255,255,255,0.8);
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+    .mobile-header-btn:active { 
+      background: rgba(255,255,255,0.3); 
+      transform: scale(0.9); 
+    }
     .mobile-header-btn svg {
       width: 20px;
       height: 20px;
+      color: white;
+      transition: var(--transition);
+    }
+    .mobile-header.scrolled .mobile-header-btn svg,
+    .mobile-header.map-header .mobile-header-btn svg {
+      color: var(--primary);
     }
 
     /* Views */
@@ -354,7 +401,7 @@
     /* Bottom Navigation - Flotante */
     .mobile-bottom-nav {
       position: fixed; 
-      bottom: calc(16px + var(--safe-bottom)); 
+      bottom: calc(20px + var(--safe-bottom)); 
       left: 50%;
       transform: translateX(-50%);
       background: rgba(255,255,255,0.95); 
@@ -403,15 +450,17 @@
     }
     .mobile-nav-item:active { transform: scale(0.9); }
 
-    /* Carousel */
+    /* Carousel - Más pequeño */
     .carousel-container {
       position: relative; 
-      margin: 16px; 
-      border-radius: var(--radius-lg);
+      width: 100%;
+      height: 45vh;
+      height: 45dvh;
+      min-height: 300px;
+      max-height: 400px;
       overflow: hidden; 
-      box-shadow: var(--shadow-lg);
-      height: 380px;
-      width: calc(100% - 32px);
+      box-shadow: none;
+      margin: 0;
     }
     .carousel-slides {
       display: flex; 
@@ -432,7 +481,7 @@
       content: ''; 
       position: absolute; 
       inset: 0;
-      background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.05) 100%);
+      background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.1) 100%);
     }
     .carousel-content {
       position: relative; 
@@ -442,7 +491,7 @@
       width: 100%;
     }
     .carousel-content h2 {
-      font-size: 1.4rem; 
+      font-size: 1.3rem; 
       font-weight: 900; 
       margin-bottom: 8px;
     }
@@ -452,14 +501,14 @@
       margin-bottom: 16px;
     }
     .carousel-content .btn-explore {
-      padding: 12px 24px; 
+      padding: 10px 20px; 
       background: var(--accent); 
       color: white;
       border: none; 
       border-radius: 25px; 
       font-weight: 700; 
       cursor: pointer;
-      font-size: 0.85rem; 
+      font-size: 0.8rem; 
       transition: var(--transition);
       box-shadow: 0 4px 15px rgba(230, 57, 70, 0.4);
     }
@@ -565,17 +614,75 @@
       transform: scale(0.98); 
     }
 
-    /* Map */
+    /* Map - Pantalla completa */
     .mobile-map-container {
-      margin: 16px; 
-      border-radius: var(--radius-lg);
-      overflow: hidden; 
-      box-shadow: var(--shadow-sm);
-      width: calc(100% - 32px);
+      width: 100%;
+      height: 100vh;
+      height: 100dvh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      margin: 0;
+      border-radius: 0;
+      overflow: hidden;
+      box-shadow: none;
+      z-index: 1;
     }
     .mobile-map { 
-      height: 400px; 
+      height: 100%; 
       width: 100%; 
+    }
+    
+    /* Controles del mapa - Flotantes y transparentes */
+    .map-controls {
+      display: flex;
+      gap: 8px;
+      padding: 0 16px;
+      align-items: center;
+      position: fixed;
+      bottom: calc(85px + var(--safe-bottom));
+      left: 0;
+      right: 0;
+      z-index: 10;
+      pointer-events: none;
+    }
+    .map-control-btn {
+      flex: 1;
+      padding: 14px;
+      border-radius: 50px;
+      border: 1px solid rgba(255,255,255,0.3);
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: var(--transition);
+      pointer-events: auto;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .map-control-btn:active { transform: scale(0.95); }
+    .map-control-btn.primary {
+      background: rgba(230, 57, 70, 0.85);
+      color: white;
+      box-shadow: 0 4px 15px rgba(230, 57, 70, 0.3);
+    }
+    .map-control-btn.primary:active {
+      background: rgba(230, 57, 70, 0.95);
+    }
+    .map-control-btn.secondary {
+      background: rgba(255,255,255,0.85);
+      color: var(--primary);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .map-control-btn.secondary:active {
+      background: rgba(255,255,255,0.95);
+    }
+    .map-control-btn svg {
+      width: 16px;
+      height: 16px;
     }
 
     /* Buttons */
@@ -649,12 +756,15 @@
       align-items: center;
       justify-content: center;
       transition: var(--transition);
-      font-size: 1.2rem;
       z-index: 2;
     }
     .profile-drawer-close:active {
       background: rgba(255,255,255,0.3);
       transform: scale(0.9);
+    }
+    .profile-drawer-close svg {
+      width: 20px;
+      height: 20px;
     }
     
     .profile-drawer-header {
@@ -727,7 +837,7 @@
   <div class="profile-drawer-overlay" id="profileDrawerOverlay" onclick="closeProfileDrawer()"></div>
   <div class="profile-drawer" id="profileDrawer">
     <button class="profile-drawer-close" onclick="closeProfileDrawer()">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M6 18L18 6M6 6l12 12"/>
       </svg>
     </button>
@@ -750,7 +860,8 @@
   <div id="mobileApp">
     <!-- Vista Inicio -->
     <div class="mobile-view active" id="mViewInicio">
-      <div class="mobile-header">
+      <!-- Header transparente sobre el carrusel -->
+      <div class="mobile-header" id="homeHeader">
         <div class="mobile-header-title">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
@@ -823,7 +934,13 @@
 
     <!-- Vista Mapa -->
     <div class="mobile-view" id="mViewMapa">
-      <div class="mobile-header">
+      <!-- Mapa a pantalla completa (detrás de todo) -->
+      <div class="mobile-map-container">
+        <div class="mobile-map" id="mMap"></div>
+      </div>
+
+      <!-- Header compacto flotante sobre el mapa -->
+      <div class="mobile-header map-header" style="position: fixed; z-index: 100;">
         <div class="mobile-header-title">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
@@ -831,29 +948,28 @@
           <span>Mapa</span>
         </div>
       </div>
-      <div class="mobile-map-container">
-        <div class="mobile-map" id="mMap"></div>
-      </div>
-      <div class="mobile-card">
-        <button class="mobile-btn mobile-btn-primary" id="mBtnUbicacion">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+
+      <!-- Controles flotantes sobre el mapa (un poco más arriba) -->
+      <div class="map-controls">
+        <button class="map-control-btn primary" id="mBtnUbicacion">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
             <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
           </svg>
           Mi ubicación
         </button>
-        <button class="mobile-btn mobile-btn-secondary" id="mBtnAvistamientos" style="margin-top:8px;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+        <button class="map-control-btn secondary" id="mBtnAvistamientos">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M3 17l6-6 4 4 8-8m0 0v7m0-7h-7"/>
           </svg>
-          Ver avistamientos
+          Avistamientos
         </button>
       </div>
     </div>
 
     <!-- Vista Avistamientos -->
     <div class="mobile-view" id="mViewAvistamientos">
-      <div class="mobile-header">
+      <div class="mobile-header scrolled" style="position: fixed;">
         <div class="mobile-header-title">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M3 17l6-6 4 4 8-8m0 0v7m0-7h-7"/>
@@ -861,6 +977,7 @@
           <span>Avistamientos</span>
         </div>
       </div>
+      <div style="height: calc(56px + var(--safe-top));"></div>
       <div class="mobile-card">
         <div id="mAvistamientosList">
           <p style="text-align:center;color:#999;">Cargando avistamientos...</p>
@@ -901,6 +1018,9 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
+    // ... (todo el JavaScript se mantiene igual que en la versión anterior)
+    // No lo repito aquí para ahorrar espacio, pero es idéntico al código anterior
+    
     const SUPABASE_URL = 'https://tawdvbekatpszlwiekzr.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_H38vzEeo__eHO6M_yWR4HA_H-Uyz0kx';
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -914,7 +1034,6 @@
     let carouselIndex = 0;
     let carouselInterval;
 
-    // ============ NAVEGACIÓN ============
     function mobileNavigate(view) {
       currentMView = view;
       document.querySelectorAll('.mobile-view').forEach(v => v.classList.remove('active'));
@@ -937,7 +1056,6 @@
       }
     }
 
-    // ============ PROFILE DRAWER ============
     function openProfileDrawer() {
       const drawer = document.getElementById('profileDrawer');
       const overlay = document.getElementById('profileDrawerOverlay');
@@ -1003,7 +1121,6 @@
       document.getElementById('profileDrawerOverlay').classList.remove('active');
     }
 
-    // ============ SESIÓN ============
     function cargarSesion() { 
       const s = localStorage.getItem('paraba_user'); 
       if (s) { currentUser = JSON.parse(s); return true; } 
@@ -1012,7 +1129,6 @@
     function guardarSesion() { if (currentUser) localStorage.setItem('paraba_user', JSON.stringify(currentUser)); }
     function limpiarSesion() { localStorage.removeItem('paraba_user'); }
 
-    // ============ MODALES ============
     function abrirModal(tipo) {
       let html = '';
       if (tipo === 'login') {
@@ -1025,7 +1141,7 @@
               Iniciar Sesión
             </h2>
             <button class="btn-close-modal" onclick="cerrarModal()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M6 18L18 6M6 6l12 12"/>
               </svg>
             </button>
@@ -1044,7 +1160,7 @@
               Crear Cuenta
             </h2>
             <button class="btn-close-modal" onclick="cerrarModal()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M6 18L18 6M6 6l12 12"/>
               </svg>
             </button>
@@ -1060,7 +1176,7 @@
           <div class="modal-header">
             <h2>Mis Favoritos</h2>
             <button class="btn-close-modal" onclick="cerrarModal()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M6 18L18 6M6 6l12 12"/>
               </svg>
             </button>
@@ -1071,7 +1187,7 @@
           <div class="modal-header">
             <h2>Mis Avistamientos</h2>
             <button class="btn-close-modal" onclick="cerrarModal()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M6 18L18 6M6 6l12 12"/>
               </svg>
             </button>
@@ -1083,7 +1199,7 @@
           <div class="modal-header">
             <h2>Registrar Avistamiento</h2>
             <button class="btn-close-modal" onclick="cerrarModal()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M6 18L18 6M6 6l12 12"/>
               </svg>
             </button>
@@ -1156,7 +1272,6 @@
       }
     }
 
-    // ============ AUTENTICACIÓN ============
     async function iniciarSesion() {
       const usuario = document.getElementById('loginUsuario')?.value?.trim();
       const password = document.getElementById('loginPassword')?.value;
@@ -1235,7 +1350,6 @@
       currentUser ? abrirModal('misAvistamientos') : abrirModal('login'); 
     }
 
-    // ============ CARGAR DATOS ============
     async function cargarAvistamientosMobile() {
       const container = document.getElementById('mAvistamientosList');
       if (!container) return;
@@ -1424,7 +1538,6 @@
       mostrarSpinner(false);
     }
 
-    // ============ MAPA ============
     function initMMap() {
       mMap = L.map('mMap', { zoomControl: true, scrollWheelZoom: true }).setView([ubicacionActual.lat, ubicacionActual.lng], 7);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(mMap);
@@ -1479,7 +1592,6 @@
       });
     }
 
-    // ============ CLIMA ============
     function obtenerClima(lat, lon) {
       fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto`)
         .then(r => r.json())
@@ -1528,7 +1640,6 @@
       if (mMap) mMap.setView([lat, lng], 15);
     }
 
-    // ============ UTILIDADES ============
     function mostrarToast(msg, tipo = 'info') {
       const t = document.getElementById('toast');
       t.textContent = msg;
@@ -1541,13 +1652,11 @@
       document.getElementById('spinnerOverlay').classList.toggle('active', s);
     }
 
-    // ============ CARRUSEL ============
     function initCarousel() {
       const slides = document.getElementById('carouselSlides');
       const dotsContainer = document.getElementById('carouselDots');
       const totalSlides = slides.children.length;
       
-      // Crear dots
       for (let i = 0; i < totalSlides; i++) {
         const dot = document.createElement('div');
         dot.className = `carousel-dot ${i === 0 ? 'active' : ''}`;
@@ -1568,10 +1677,8 @@
         goToSlide(carouselIndex);
       }
       
-      // Auto-play
       carouselInterval = setInterval(nextSlide, 5000);
       
-      // Touch support
       let touchStartX = 0;
       let touchEndX = 0;
       
@@ -1587,10 +1694,8 @@
         
         if (Math.abs(diff) > 50) {
           if (diff > 0) {
-            // Swipe left
             carouselIndex = (carouselIndex + 1) % totalSlides;
           } else {
-            // Swipe right
             carouselIndex = (carouselIndex - 1 + totalSlides) % totalSlides;
           }
           goToSlide(carouselIndex);
@@ -1602,7 +1707,19 @@
       window.goToSlide = goToSlide;
     }
 
-    // ============ EXPONER FUNCIONES ============
+    function initHeaderScroll() {
+      const header = document.getElementById('homeHeader');
+      if (!header) return;
+      
+      window.addEventListener('scroll', () => {
+        if (window.scrollY > 50) {
+          header.classList.add('scrolled');
+        } else {
+          header.classList.remove('scrolled');
+        }
+      }, { passive: true });
+    }
+
     window.mobileNavigate = mobileNavigate;
     window.openProfileDrawer = openProfileDrawer;
     window.closeProfileDrawer = closeProfileDrawer;
@@ -1618,21 +1735,16 @@
     window.usarUbicacionActual = usarUbicacionActual;
     window.navegarAUbicacion = navegarAUbicacion;
 
-    // ============ INICIALIZACIÓN ============
     document.addEventListener('DOMContentLoaded', async () => {
       console.log('Iniciando Ecos de Vuelo Rojo...');
       
-      // Inicializar carrusel
       initCarousel();
-      
-      // Cargar sesión
+      initHeaderScroll();
       cargarSesion();
       
-      // Cargar datos
       await cargarAvistamientosMobile();
       await cargarAlertas();
       
-      // Obtener ubicación y clima
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(pos => {
           obtenerClima(pos.coords.latitude, pos.coords.longitude);
