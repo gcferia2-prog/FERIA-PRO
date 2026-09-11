@@ -5,45 +5,59 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Ecos de Vuelo Rojo · Paraba Roja</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" />
-  
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" />
+
   <style>
+    /* ============================================================
+       TOKENS — identidad visual propia para la Paraba Roja
+       (Ara rubrogenys), endémica de los valles secos de Bolivia.
+       ============================================================ */
     :root {
-      --primary: #1a1a2e;
-      --secondary: #16213e;
-      --accent: #e63946;
-      --accent-hover: #c1121f;
-      --success: #2d6a4f;
-      --warning: #f4a261;
-      --info: #457b9d;
-      --bg: #f8f9fa;
-      --surface: #ffffff;
-      --text: #1a1a2e;
-      --text-secondary: #6c757d;
-      --border: #e9ecef;
-      --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
-      --shadow: 0 4px 6px rgba(0,0,0,0.07);
-      --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
-      --radius: 16px;
-      --radius-lg: 24px;
-      --radius-xl: 32px;
-      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --ink: #1B1B2F;              /* noche del valle */
+      --ink-2: #262640;
+      --accent: #D6483F;           /* rojo pluma de la paraba */
+      --accent-hover: #B23830;
+      --route: #C6862E;            /* ocre de los valles secos */
+      --route-hover: #A66F24;
+      --sage: #5C8264;             /* vegetación / éxito */
+      --teal: #326E7A;             /* info / secundario */
+      --warn: #C6862E;
+      --danger: #C0392B;
+
+      --bg: #F4F3EF;
+      --surface: #FFFFFF;
+      --text: #1B1B2F;
+      --text-soft: #6B6A66;
+      --border: #E7E5DE;
+
+      --shadow-sm: 0 1px 3px rgba(27,27,47,0.06), 0 1px 2px rgba(27,27,47,0.08);
+      --shadow: 0 6px 18px rgba(27,27,47,0.10);
+      --shadow-lg: 0 18px 40px rgba(27,27,47,0.18);
+
+      --r-sm: 12px;
+      --r-md: 18px;
+      --r-lg: 26px;
+      --r-pill: 999px;
+
+      --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+      --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
 
-    * { 
-      margin: 0; 
-      padding: 0; 
-      box-sizing: border-box; 
-      -webkit-tap-highlight-color: transparent; 
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    html { -webkit-text-size-adjust: 100%; }
 
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       background: var(--bg);
       color: var(--text);
-      line-height: 1.6;
+      line-height: 1.55;
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
       overscroll-behavior: none;
@@ -54,850 +68,528 @@
       position: relative;
     }
 
-    /* Ocultar controles de zoom del mapa */
-    .leaflet-control-zoom {
-      display: none !important;
+    h1, h2, h3, .font-display {
+      font-family: 'Sora', 'Inter', sans-serif;
+      letter-spacing: -0.01em;
     }
+
+    button, a, .mobile-nav-item, .map-control-btn, .mobile-btn {
+      touch-action: manipulation;
+    }
+
+    .leaflet-control-zoom { display: none !important; }
+    .leaflet-routing-container { display: none !important; }
 
     /* ============ TOAST ============ */
     .toast {
-      position: fixed; 
-      top: calc(20px + var(--safe-top)); 
-      left: 50%;
-      transform: translateX(-50%) translateY(-100px);
-      padding: 14px 20px; 
-      background: white;
-      border-radius: 12px; 
-      box-shadow: var(--shadow-lg); 
-      z-index: 10000;
-      font-weight: 500; 
-      max-width: 90%; 
-      display: flex; 
-      align-items: center; 
-      gap: 12px;
-      border: 1px solid var(--border); 
-      font-size: 0.9rem;
-      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      pointer-events: none;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      position: fixed; top: calc(20px + var(--safe-top)); left: 50%;
+      transform: translate3d(-50%, -100px, 0);
+      padding: 14px 20px; background: white;
+      border-radius: var(--r-sm); box-shadow: var(--shadow-lg); z-index: 10000;
+      font-weight: 600; max-width: 90%; display: flex; align-items: center; gap: 12px;
+      border: 1px solid var(--border); font-size: 0.88rem;
+      transition: transform 0.4s var(--ease-spring);
+      pointer-events: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      will-change: transform;
     }
-    .toast.show { transform: translateX(-50%) translateY(0); }
-    .toast.success { border-left: 4px solid var(--success); color: var(--success); background: #f0fdf4; }
-    .toast.error { border-left: 4px solid #dc3545; color: #dc3545; background: #fef2f2; }
-    .toast.info { border-left: 4px solid var(--info); color: var(--info); background: #eff6ff; }
+    .toast.show { transform: translate3d(-50%, 0, 0); }
+    .toast.success { border-left: 4px solid var(--sage); color: var(--sage); background: #f2f8f3; }
+    .toast.error { border-left: 4px solid var(--danger); color: var(--danger); background: #fdf2f1; }
+    .toast.info { border-left: 4px solid var(--teal); color: var(--teal); background: #eff6f7; }
 
     /* ============ SPINNER ============ */
     .spinner-overlay {
-      display: flex; 
-      position: fixed; 
-      inset: 0; 
-      background: rgba(0,0,0,0.5);
-      z-index: 10001; 
-      align-items: center; 
-      justify-content: center;
-      opacity: 0; 
-      visibility: hidden; 
-      transition: opacity 0.3s, visibility 0.3s;
-      backdrop-filter: blur(4px);
+      display: flex; position: fixed; inset: 0; background: rgba(27,27,47,0.45);
+      z-index: 10001; align-items: center; justify-content: center;
+      opacity: 0; visibility: hidden; transition: opacity 0.25s var(--ease-out), visibility 0.25s;
+      backdrop-filter: blur(3px);
     }
     .spinner-overlay.active { opacity: 1; visibility: visible; }
     .spinner-big {
-      width: 50px; 
-      height: 50px; 
-      border: 3px solid rgba(255,255,255,0.3);
-      border-radius: 50%; 
-      border-top-color: white;
-      animation: spin 0.8s linear infinite;
+      width: 46px; height: 46px; border: 3px solid rgba(255,255,255,0.25);
+      border-radius: 50%; border-top-color: white;
+      animation: spin 0.7s linear infinite;
+      will-change: transform;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    .skeleton {
+      background: linear-gradient(90deg, #ececea 25%, #f6f5f2 45%, #ececea 65%);
+      background-size: 250% 100%;
+      animation: shimmer 1.3s ease-in-out infinite;
+      border-radius: 10px;
+      will-change: background-position;
+    }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -50% 0; } }
+    .skeleton-item { padding: 14px 16px; background: #f8f8f6; border-radius: var(--r-sm); margin-bottom: 10px; }
+    .skeleton-item .skeleton { height: 12px; margin-bottom: 8px; }
+    .skeleton-item .skeleton.w60 { width: 60%; }
+    .skeleton-item .skeleton.w40 { width: 40%; }
+    .skeleton-item .skeleton.w80 { width: 80%; }
+
     /* ============ MODAL ============ */
     .modal-overlay {
-      display: flex; 
-      position: fixed; 
-      inset: 0; 
-      background: rgba(0,0,0,0.6);
-      z-index: 9999; 
-      align-items: flex-end; 
-      justify-content: center;
-      opacity: 0; 
-      visibility: hidden; 
-      transition: opacity 0.3s, visibility 0.3s;
+      display: flex; position: fixed; inset: 0; background: rgba(27,27,47,0.55);
+      z-index: 9999; align-items: flex-end; justify-content: center;
+      opacity: 0; visibility: hidden; transition: opacity 0.3s var(--ease-out), visibility 0.3s;
     }
     .modal-overlay.active { opacity: 1; visibility: visible; }
-    
+
     .modal {
-      background: white; 
-      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-      padding: 16px 20px calc(20px + var(--safe-bottom));
-      width: 100%; 
-      max-width: 100%; 
-      max-height: 90vh; 
-      overflow-y: auto;
-      transform: translateY(100%); 
-      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      box-shadow: 0 -10px 40px rgba(0,0,0,0.3);
+      background: var(--surface); border-radius: var(--r-lg) var(--r-lg) 0 0;
+      padding: 14px 20px calc(20px + var(--safe-bottom));
+      width: 100%; max-width: 100%; max-height: 90vh; overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      transform: translate3d(0, 100%, 0);
+      transition: transform 0.4s var(--ease-spring);
+      box-shadow: 0 -12px 40px rgba(27,27,47,0.25);
+      will-change: transform;
     }
-    .modal-overlay.active .modal { transform: translateY(0); }
-    
-    .modal-handle {
-      width: 40px; 
-      height: 4px; 
-      background: #ddd; 
-      border-radius: 2px;
-      margin: 0 auto 20px;
-    }
-    
+    .modal-overlay.active .modal { transform: translate3d(0, 0, 0); }
+
+    .modal-handle { width: 40px; height: 4px; background: #e2e0d8; border-radius: 2px; margin: 0 auto 18px; }
+
     .modal-header {
-      display: flex; 
-      align-items: center; 
-      justify-content: space-between;
-      margin-bottom: 24px; 
-      padding-bottom: 16px; 
-      border-bottom: 2px solid #f0f0f0;
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--border);
       gap: 12px;
     }
     .modal-header h2 {
-      color: var(--primary); 
-      font-size: 1.2rem; 
-      font-weight: 800;
-      margin: 0; 
-      display: flex; 
-      align-items: center; 
-      gap: 10px;
-      flex: 1;
+      color: var(--ink); font-size: 1.15rem; font-weight: 700;
+      margin: 0; display: flex; align-items: center; gap: 10px; flex: 1;
     }
-    .modal-header h2 svg { color: var(--accent); width: 22px; height: 22px; flex-shrink: 0; }
-    
+    .modal-header h2 svg { color: var(--accent); width: 21px; height: 21px; flex-shrink: 0; }
+
     .btn-close-modal {
-      width: 36px; 
-      height: 36px; 
-      border-radius: 50%; 
-      border: none;
-      background: #f5f5f5; 
-      color: #666; 
-      cursor: pointer;
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      transition: var(--transition);
+      width: 34px; height: 34px; border-radius: 50%; border: none;
+      background: #f2f1ec; color: var(--text-soft); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s var(--ease-out), transform 0.2s var(--ease-spring);
       flex-shrink: 0;
     }
-    .btn-close-modal:active { background: #fee2e2; color: #dc3545; transform: scale(0.9); }
-    .btn-close-modal svg { width: 16px; height: 16px; }
-    
+    .btn-close-modal:active { background: #fbe5e3; color: var(--accent); transform: scale(0.9); }
+    .btn-close-modal svg { width: 15px; height: 15px; }
+
+    .field-label {
+      font-size: 0.75rem; font-weight: 700; color: var(--text-soft);
+      margin: 14px 0 6px; display: block;
+    }
+    .field-label:first-child { margin-top: 0; }
+
     .modal input, .modal textarea, .modal select {
-      width: 100%; 
-      padding: 14px 16px; 
-      margin: 8px 0; 
-      border: 2px solid var(--border);
-      border-radius: 12px; 
-      font-size: 0.9rem; 
-      background: #fafafa;
-      font-family: 'Inter', sans-serif; 
-      transition: var(--transition);
-      user-select: text; 
-      -webkit-user-select: text;
+      width: 100%; padding: 13px 15px; border: 1.5px solid var(--border);
+      border-radius: var(--r-sm); font-size: 0.92rem; background: #fbfaf8;
+      font-family: 'Inter', sans-serif; transition: border-color 0.2s var(--ease-out), background 0.2s;
+      user-select: text; -webkit-user-select: text;
     }
     .modal input:focus, .modal textarea:focus, .modal select:focus {
-      outline: none; 
-      border-color: var(--accent); 
-      background: white;
-      box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.1);
+      outline: none; border-color: var(--accent); background: white;
+      box-shadow: 0 0 0 4px rgba(214, 72, 63, 0.1);
     }
-    
+
     .btn-primary {
-      width: 100%; 
-      padding: 16px; 
-      background: linear-gradient(135deg, var(--accent), var(--accent-hover));
-      color: white; 
-      border: none; 
-      border-radius: 12px; 
-      font-weight: 700;
-      cursor: pointer; 
-      margin-top: 14px; 
-      font-size: 0.95rem; 
-      transition: var(--transition);
-      box-shadow: 0 4px 15px rgba(230, 57, 70, 0.3);
+      width: 100%; padding: 15px; background: var(--accent);
+      color: white; border: none; border-radius: var(--r-sm); font-weight: 700;
+      cursor: pointer; margin-top: 16px; font-size: 0.94rem;
+      transition: transform 0.15s var(--ease-spring), background 0.2s;
+      box-shadow: 0 6px 16px rgba(214, 72, 63, 0.28);
+      display: flex; align-items: center; justify-content: center; gap: 8px;
     }
-    .btn-primary:active { transform: scale(0.98); box-shadow: 0 2px 8px rgba(230, 57, 70, 0.3); }
-    
+    .btn-primary:active { transform: scale(0.97); background: var(--accent-hover); }
+    .btn-primary:disabled { opacity: 0.55; box-shadow: none; }
+
     .btn-secondary {
-      width: 100%; 
-      padding: 14px; 
-      background: var(--info); 
-      color: white; 
-      border: none;
-      border-radius: 12px; 
-      font-weight: 600; 
-      cursor: pointer; 
-      margin-top: 8px;
-      font-size: 0.9rem; 
-      transition: var(--transition);
+      width: 100%; padding: 13px; background: #eef4f5; color: var(--teal); border: 1.5px solid #d7e6e8;
+      border-radius: var(--r-sm); font-weight: 700; cursor: pointer; margin-top: 10px;
+      font-size: 0.88rem; transition: var(--ease-out); display: flex; align-items: center; justify-content: center; gap: 8px;
     }
-    .btn-secondary:active { background: #3a6b8a; transform: scale(0.98); }
-    .btn-secondary:disabled { background: #ccc; cursor: not-allowed; }
-    
+    .btn-secondary:active { background: #e0edee; transform: scale(0.98); }
+    .btn-secondary:disabled { background: #f0f0ee; color: #aaa; border-color: #eee; cursor: not-allowed; }
+
     .btn-danger {
-      width: 100%; 
-      padding: 16px; 
-      background: #dc3545; 
-      color: white; 
-      border: none;
-      border-radius: 12px; 
-      font-weight: 700; 
-      cursor: pointer; 
-      margin-top: 14px;
-      font-size: 0.95rem; 
-      transition: var(--transition);
+      width: 100%; padding: 15px; background: var(--danger); color: white; border: none;
+      border-radius: var(--r-sm); font-weight: 700; cursor: pointer; margin-top: 14px;
+      font-size: 0.94rem; transition: var(--ease-out);
     }
-    .btn-danger:active { background: #c82333; transform: scale(0.98); }
-    
-    .modal .link { text-align: center; margin-top: 16px; color: #999; font-size: 0.9rem; }
-    .modal .link a { color: var(--accent); cursor: pointer; font-weight: 600; transition: var(--transition); }
+    .btn-danger:active { background: #a5341f; transform: scale(0.98); }
+
+    .modal .link { text-align: center; margin-top: 18px; color: #9a988f; font-size: 0.86rem; }
+    .modal .link a { color: var(--accent); cursor: pointer; font-weight: 700; }
     .modal .link a:active { color: var(--accent-hover); }
-    
+
     .ubicacion-info {
-      display: flex; 
-      align-items: center; 
-      gap: 8px; 
-      padding: 10px 14px;
-      background: #f0fdf4; 
-      border: 1px solid #bbf7d0; 
-      border-radius: 12px;
-      margin: 8px 0; 
-      font-size: 0.85rem; 
-      color: var(--success);
-      animation: fadeIn 0.3s ease;
+      display: flex; align-items: center; gap: 8px; padding: 11px 14px;
+      background: #f2f8f3; border: 1px solid #cfe6d3; border-radius: var(--r-sm);
+      margin: 10px 0 4px; font-size: 0.83rem; color: var(--sage); font-weight: 600;
+      animation: fadeIn 0.3s var(--ease-out);
     }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 
     /* ============ APP MÓVIL ============ */
     #mobileApp {
-      display: block;
-      min-height: 100vh;
-      background: var(--bg);
-      padding-bottom: calc(80px + var(--safe-bottom));
-      width: 100%;
-      max-width: 100vw;
-      overflow-x: hidden;
+      display: block; min-height: 100vh; background: var(--bg);
+      padding-bottom: calc(84px + var(--safe-bottom));
+      width: 100%; max-width: 100vw; overflow-x: hidden;
     }
 
-    /* Header - Transparente sobre la portada */
     .mobile-header {
-      position: absolute; 
-      top: 0; 
-      left: 0;
-      right: 0;
-      z-index: 100;
+      position: absolute; top: 0; left: 0; right: 0; z-index: 100;
       background: transparent;
       padding: calc(12px + var(--safe-top)) 16px 12px;
-      display: flex; 
-      align-items: center; 
-      justify-content: space-between;
-      gap: 12px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
       min-height: 60px;
-      transition: var(--transition);
+      transition: background 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
     }
     .mobile-header.scrolled {
-      background: rgba(255,255,255,0.95); 
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border);
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      background: rgba(255,255,255,0.96); backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border); box-shadow: var(--shadow-sm);
       position: fixed;
     }
-    
     .mobile-header.map-header {
-      background: transparent;
-      backdrop-filter: none;
-      border-bottom: none;
-      box-shadow: none;
-      padding: calc(8px + var(--safe-top)) 16px 4px;
-      min-height: 48px;
-      position: fixed;
+      background: transparent; backdrop-filter: none; border-bottom: none; box-shadow: none;
+      padding: calc(8px + var(--safe-top)) 16px 4px; min-height: 48px; position: fixed;
     }
-    
+
     .mobile-header-title {
-      font-size: 1.1rem; 
-      font-weight: 800; 
-      color: white;
-      display: flex; 
-      align-items: center; 
-      gap: 8px;
-      flex: 1;
-      min-width: 0;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-      transition: var(--transition);
+      font-size: 1.08rem; font-weight: 700; color: white;
+      display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.35);
+      transition: color 0.25s var(--ease-out), text-shadow 0.25s;
     }
     .mobile-header.scrolled .mobile-header-title,
-    .mobile-header.map-header .mobile-header-title {
-      color: var(--primary);
-      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-    }
-    .mobile-header-title svg { 
-      color: var(--accent); 
-      width: 20px; 
-      height: 20px; 
-      flex-shrink: 0; 
-    }
-    .mobile-header.map-header .mobile-header-title svg {
-      width: 18px;
-      height: 18px;
-    }
-    .mobile-header-title span {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .mobile-header.map-header .mobile-header-title span {
-      font-size: 0.9rem;
-    }
-    
+    .mobile-header.map-header .mobile-header-title { color: var(--ink); text-shadow: none; }
+    .mobile-header-title svg { color: var(--accent); width: 19px; height: 19px; flex-shrink: 0; }
+    .mobile-header.map-header .mobile-header-title svg { width: 18px; height: 18px; }
+    .mobile-header-title span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mobile-header.map-header .mobile-header-title span { font-size: 0.88rem; }
+
     .mobile-header-btn {
-      width: 40px; 
-      height: 40px; 
-      border-radius: 50%;
-      background: rgba(255,255,255,0.2); 
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.3);
-      cursor: pointer;
-      display: flex; 
-      align-items: center; 
-      justify-content: center;
-      transition: var(--transition);
-      flex-shrink: 0;
-      position: relative;
+      width: 40px; height: 40px; border-radius: 50%;
+      background: rgba(255,255,255,0.22); backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.3); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s, transform 0.15s var(--ease-spring);
+      flex-shrink: 0; position: relative;
     }
     .mobile-header.scrolled .mobile-header-btn,
-    .mobile-header.map-header .mobile-header-btn {
-      background: rgba(255,255,255,0.8);
-      border: 1px solid rgba(0,0,0,0.1);
-    }
-    .mobile-header-btn:active { 
-      background: rgba(255,255,255,0.3); 
-      transform: scale(0.9); 
-    }
-    .mobile-header-btn svg {
-      width: 20px;
-      height: 20px;
-      color: white;
-      transition: var(--transition);
-    }
+    .mobile-header.map-header .mobile-header-btn { background: rgba(27,27,47,0.06); border: 1px solid rgba(27,27,47,0.08); }
+    .mobile-header-btn:active { transform: scale(0.9); }
+    .mobile-header-btn svg { width: 19px; height: 19px; color: white; }
     .mobile-header.scrolled .mobile-header-btn svg,
-    .mobile-header.map-header .mobile-header-btn svg {
-      color: var(--primary);
-    }
+    .mobile-header.map-header .mobile-header-btn svg { color: var(--ink); }
 
-    /* Views */
-    .mobile-view { 
-      display: none; 
-      width: 100%;
-    }
-    .mobile-view.active { 
-      display: block; 
-      animation: slideIn 0.3s ease; 
-    }
-    @keyframes slideIn { 
-      from { opacity: 0; transform: translateX(20px); } 
-      to { opacity: 1; transform: translateX(0); } 
-    }
+    .mobile-view { display: none; width: 100%; }
+    .mobile-view.active { display: block; animation: viewIn 0.28s var(--ease-out); }
+    @keyframes viewIn { from { opacity: 0; transform: translate3d(0,8px,0); } to { opacity: 1; transform: translate3d(0,0,0); } }
 
-    /* Bottom Navigation - REDISEÑADA */
+    /* ---- Bottom nav: 4 secciones ---- */
     .mobile-bottom-nav {
-      position: fixed; 
-      bottom: 0;
-      left: 0;
-      right: 0;
-      width: 100%;
-      background: rgba(255,255,255,0.98); 
-      backdrop-filter: blur(20px);
+      position: fixed; bottom: 0; left: 0; right: 0; width: 100%;
+      background: rgba(255,255,255,0.98); backdrop-filter: blur(16px);
       border-top: 1px solid var(--border);
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      z-index: 1000; 
-      box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      z-index: 1000; box-shadow: 0 -6px 20px rgba(27,27,47,0.06);
       padding-bottom: var(--safe-bottom);
     }
     .mobile-nav-item {
-      display: flex; 
-      flex-direction: column; 
-      align-items: center; 
-      justify-content: center;
-      gap: 2px;
-      cursor: pointer; 
-      color: #999; 
-      transition: var(--transition);
-      padding: 8px 0;
-      position: relative;
-      min-height: 56px;
-      border: none;
-      background: transparent;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 3px; cursor: pointer; color: #a6a49b;
+      transition: color 0.2s var(--ease-out);
+      padding: 9px 0; position: relative; min-height: 58px; border: none; background: transparent;
     }
-    .mobile-nav-item svg { 
-      width: 24px; 
-      height: 24px;
-      transition: var(--transition);
-      display: block;
-    }
-    .mobile-nav-item span {
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 0.2px;
-      line-height: 1.2;
-    }
-    .mobile-nav-item.active { 
-      color: var(--accent);
-    }
+    .mobile-nav-item svg { width: 22px; height: 22px; transition: transform 0.2s var(--ease-spring); display: block; }
+    .mobile-nav-item span { font-family: 'Sora', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.1px; line-height: 1.2; }
+    .mobile-nav-item.active { color: var(--accent); }
+    .mobile-nav-item.active svg { transform: translateY(-1px) scale(1.05); }
     .mobile-nav-item.active::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 40px;
-      height: 3px;
-      background: var(--accent);
-      border-radius: 0 0 3px 3px;
+      content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: 28px; height: 3px; background: var(--accent); border-radius: 0 0 3px 3px;
     }
-    .mobile-nav-item:active { 
-      background: rgba(230, 57, 70, 0.05);
-    }
+    .mobile-nav-item:active { background: rgba(214, 72, 63, 0.06); }
 
-    /* Carousel - Portada ARRIBA del header */
+    /* ---- Carousel ---- */
     .carousel-container {
-      position: relative; 
-      width: 100%;
-      height: 50vh;
-      height: 50dvh;
-      min-height: 350px;
-      max-height: 450px;
-      overflow: hidden; 
-      box-shadow: none;
-      margin: 0;
-      margin-top: calc(-1 * var(--safe-top));
-      padding-top: var(--safe-top);
+      position: relative; width: 100%; height: 50vh; height: 50dvh;
+      min-height: 350px; max-height: 450px; overflow: hidden;
+      margin: 0; margin-top: calc(-1 * var(--safe-top)); padding-top: var(--safe-top);
     }
-    .carousel-slides {
-      display: flex; 
-      width: 100%; 
-      height: 100%;
-      transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    }
+    .carousel-slides { display: flex; width: 100%; height: 100%; transition: transform 0.5s var(--ease-spring); will-change: transform; }
     .carousel-slide {
-      min-width: 100%; 
-      height: 100%;
-      background-size: cover; 
-      background-position: center;
-      position: relative; 
-      display: flex; 
-      align-items: flex-end;
+      min-width: 100%; height: 100%; background-size: cover; background-position: center;
+      position: relative; display: flex; align-items: flex-end;
     }
     .carousel-slide::before {
-      content: ''; 
-      position: absolute; 
-      inset: 0;
-      background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.1) 100%);
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(27,27,47,0.88) 0%, rgba(27,27,47,0.25) 55%, rgba(27,27,47,0.08) 100%);
     }
-    .carousel-content {
-      position: relative; 
-      z-index: 1; 
-      padding: 24px; 
-      color: white;
-      width: 100%;
-    }
-    .carousel-content h2 {
-      font-size: 1.3rem; 
-      font-weight: 900; 
-      margin-bottom: 8px;
-    }
-    .carousel-content p {
-      font-size: 0.85rem; 
-      opacity: 0.9; 
-      margin-bottom: 16px;
-    }
+    .carousel-content { position: relative; z-index: 1; padding: 24px; color: white; width: 100%; }
+    .carousel-content .eyebrow { font-size: 0.75rem; font-weight: 600; opacity: 0.85; margin-bottom: 4px; }
+    .carousel-content h2 { font-size: 1.4rem; font-weight: 800; margin-bottom: 8px; }
+    .carousel-content p { font-size: 0.86rem; opacity: 0.92; margin-bottom: 16px; max-width: 34ch; }
     .carousel-content .btn-explore {
-      padding: 10px 20px; 
-      background: var(--accent); 
-      color: white;
-      border: none; 
-      border-radius: 25px; 
-      font-weight: 700; 
-      cursor: pointer;
-      font-size: 0.8rem; 
-      transition: var(--transition);
-      box-shadow: 0 4px 15px rgba(230, 57, 70, 0.4);
+      padding: 11px 22px; background: var(--accent); color: white; border: none;
+      border-radius: var(--r-pill); font-weight: 700; cursor: pointer; font-size: 0.82rem;
+      transition: transform 0.15s var(--ease-spring); box-shadow: 0 6px 18px rgba(214,72,63,0.45);
+      font-family: 'Sora', sans-serif;
     }
-    .carousel-content .btn-explore:active { transform: scale(0.95); }
-    
-    .carousel-dots {
-      position: absolute; 
-      bottom: 16px; 
-      left: 0; 
-      right: 0;
-      display: flex; 
-      justify-content: center; 
-      gap: 8px; 
-      z-index: 2;
-    }
-    .carousel-dot {
-      width: 8px; 
-      height: 8px; 
-      border-radius: 50%;
-      background: rgba(255,255,255,0.5); 
-      cursor: pointer; 
-      transition: var(--transition);
-    }
-    .carousel-dot.active { 
-      background: white; 
-      width: 24px; 
-      border-radius: 4px; 
-    }
+    .carousel-content .btn-explore:active { transform: scale(0.94); }
 
-    /* Cards */
+    .carousel-dots { position: absolute; bottom: 16px; left: 0; right: 0; display: flex; justify-content: center; gap: 7px; z-index: 2; }
+    .carousel-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.5); cursor: pointer; transition: width 0.25s var(--ease-out), background 0.25s; }
+    .carousel-dot.active { background: white; width: 22px; border-radius: 4px; }
+
+    /* ---- Cards ---- */
     .mobile-card {
-      background: white; 
-      border-radius: var(--radius-lg);
-      padding: 20px; 
-      margin: 16px; 
-      box-shadow: var(--shadow-sm);
-      border: 1px solid var(--border);
-      width: calc(100% - 32px);
+      background: var(--surface); border-radius: var(--r-lg);
+      padding: 20px; margin: 16px; box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border); width: calc(100% - 32px);
     }
     .mobile-card h3 {
-      margin-bottom: 16px; 
-      color: var(--primary); 
-      font-weight: 700;
-      font-size: 1rem; 
-      display: flex; 
-      align-items: center; 
-      gap: 8px;
+      margin-bottom: 16px; color: var(--ink); font-weight: 700; font-size: 0.98rem;
+      display: flex; align-items: center; gap: 8px;
     }
-    .mobile-card h3 svg { 
-      color: var(--accent); 
-      width: 20px; 
-      height: 20px; 
-      flex-shrink: 0;
-    }
+    .mobile-card h3 svg { color: var(--accent); width: 19px; height: 19px; flex-shrink: 0; }
 
-    /* Weather */
-    .mobile-weather {
-      display: flex; 
-      align-items: center; 
-      gap: 20px; 
-      padding: 10px 0;
+    .quick-route-card {
+      margin: 0 16px 16px; padding: 18px 20px; border-radius: var(--r-lg);
+      background: linear-gradient(135deg, var(--route), #d99a3e);
+      color: white; display: flex; align-items: center; justify-content: space-between; gap: 14px;
+      box-shadow: 0 10px 24px rgba(198,134,46,0.32);
     }
-    .mobile-weather-icon { 
-      font-size: 2.5rem; 
-      flex-shrink: 0;
+    .quick-route-card .qr-text h4 { font-family: 'Sora', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 3px; }
+    .quick-route-card .qr-text p { font-size: 0.8rem; opacity: 0.92; }
+    .quick-route-card button {
+      flex-shrink: 0; width: 46px; height: 46px; border-radius: 50%; border: none;
+      background: rgba(255,255,255,0.22); color: white; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: transform 0.15s var(--ease-spring);
     }
+    .quick-route-card button:active { transform: scale(0.9); }
+    .quick-route-card svg { width: 20px; height: 20px; }
+
+    /* ---- Weather ---- */
+    .mobile-weather { display: flex; align-items: center; gap: 20px; padding: 10px 0; }
+    .mobile-weather-icon { font-size: 2.4rem; flex-shrink: 0; }
     .mobile-weather-info { flex: 1; }
-    .mobile-weather-temp { 
-      font-size: 2rem; 
-      font-weight: 900; 
-      color: var(--primary); 
-    }
-    .mobile-weather-desc { 
-      font-size: 0.9rem; 
-      color: #666; 
-    }
+    .mobile-weather-temp { font-family: 'Sora', sans-serif; font-size: 2rem; font-weight: 800; color: var(--ink); }
+    .mobile-weather-desc { font-size: 0.88rem; color: var(--text-soft); }
 
-    /* Alerts */
-    .mobile-alert {
-      padding: 12px 14px; 
-      border-radius: 12px; 
-      margin-top: 10px;
-      font-size: 0.8rem; 
-      cursor: pointer; 
-      transition: var(--transition);
-    }
+    /* ---- Alerts ---- */
+    .mobile-alert { padding: 13px 14px; border-radius: var(--r-sm); margin-top: 10px; font-size: 0.82rem; cursor: pointer; transition: transform 0.15s var(--ease-spring); }
     .mobile-alert:active { transform: scale(0.98); }
-    .mobile-alert.red { background: #fef2f2; border-left: 4px solid #dc3545; }
-    .mobile-alert.orange { background: #fffbeb; border-left: 4px solid var(--warning); }
-    .mobile-alert.green { background: #f0fdf4; border-left: 4px solid var(--success); }
+    .mobile-alert.red { background: #fdf2f1; border-left: 4px solid var(--danger); }
+    .mobile-alert.orange { background: #fbf3e7; border-left: 4px solid var(--warn); }
+    .mobile-alert.green { background: #f2f8f3; border-left: 4px solid var(--sage); }
 
-    /* Avistamientos */
+    /* ---- Avistamientos ---- */
     .mobile-avistamiento-item {
-      padding: 14px 16px; 
-      background: #f8f9fa; 
-      border-radius: 12px;
-      border-left: 4px solid var(--accent); 
-      margin-bottom: 10px; 
-      transition: var(--transition);
+      padding: 14px 16px; background: #f9f8f6; border-radius: var(--r-sm);
+      border-left: 4px solid var(--accent); margin-bottom: 10px;
+      transition: transform 0.15s var(--ease-spring), background 0.2s;
     }
-    .mobile-avistamiento-item:active { 
-      background: #f0f0f0; 
-      transform: scale(0.98); 
+    .mobile-avistamiento-item:active { background: #f2f1ec; transform: scale(0.98); }
+    .avistamiento-top { display: flex; justify-content: space-between; margin-bottom: 6px; gap: 8px; }
+    .avistamiento-user { color: var(--ink); font-size: 0.85rem; font-weight: 700; }
+    .avistamiento-date { color: #a6a49b; font-size: 0.7rem; flex-shrink: 0; }
+    .avistamiento-especie { color: var(--accent); font-weight: 700; font-size: 0.92rem; }
+    .avistamiento-lugar { font-size: 0.8rem; color: var(--text-soft); margin-top: 3px; }
+    .badge-count {
+      background: var(--accent); color: white; padding: 3px 9px; border-radius: var(--r-pill);
+      font-size: 0.7rem; font-weight: 700; display: inline-block; margin-top: 7px;
     }
 
-    /* Map - Pantalla completa */
+    .empty-state { text-align: center; padding: 34px 16px; color: var(--text-soft); }
+    .empty-state svg { width: 40px; height: 40px; color: #d8d6cc; margin-bottom: 10px; }
+    .empty-state p { font-size: 0.88rem; }
+
+    /* ---- Rutas ---- */
+    .ruta-item {
+      padding: 15px 16px; background: #f9f8f6; border-radius: var(--r-sm);
+      border-left: 4px solid var(--route); margin-bottom: 10px; display: flex; align-items: center; gap: 12px;
+      transition: transform 0.15s var(--ease-spring);
+    }
+    .ruta-item:active { transform: scale(0.98); }
+    .ruta-info { flex: 1; min-width: 0; }
+    .ruta-nombre { font-weight: 700; color: var(--ink); font-size: 0.92rem; }
+    .ruta-meta { font-size: 0.78rem; color: var(--text-soft); margin-top: 3px; }
+    .ruta-distancia { font-size: 0.72rem; font-weight: 700; color: var(--route); margin-top: 5px; display: inline-block; }
+    .btn-ruta-trazar {
+      flex-shrink: 0; padding: 10px 16px; background: var(--route); color: white; border: none;
+      border-radius: var(--r-pill); font-weight: 700; font-size: 0.78rem; cursor: pointer;
+      transition: transform 0.15s var(--ease-spring), background 0.2s;
+      display: flex; align-items: center; gap: 6px;
+      font-family: 'Sora', sans-serif;
+    }
+    .btn-ruta-trazar:active { transform: scale(0.93); background: var(--route-hover); }
+    .btn-ruta-trazar svg { width: 14px; height: 14px; }
+
+    .ruta-filter-note {
+      font-size: 0.78rem; color: var(--text-soft); background: #f2f8f3; border: 1px solid #cfe6d3;
+      padding: 10px 12px; border-radius: var(--r-sm); margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+    }
+    .ruta-filter-note svg { width: 16px; height: 16px; color: var(--sage); flex-shrink: 0; }
+
+    /* ---- Map ---- */
     .mobile-map-container {
-      width: 100%;
-      height: 100vh;
-      height: 100dvh;
-      position: fixed;
-      top: 0;
-      left: 0;
-      margin: 0;
-      border-radius: 0;
-      overflow: hidden;
-      box-shadow: none;
-      z-index: 1;
+      width: 100%; height: 100vh; height: 100dvh; position: fixed; top: 0; left: 0;
+      margin: 0; border-radius: 0; overflow: hidden; box-shadow: none; z-index: 1;
     }
-    .mobile-map { 
-      height: 100%; 
-      width: 100%; 
-    }
-    
-    /* Controles del mapa - Flotantes y transparentes */
+    .mobile-map { height: 100%; width: 100%; }
+
     .map-controls {
-      display: flex;
-      gap: 8px;
-      padding: 0 16px;
-      align-items: center;
-      position: fixed;
-      bottom: calc(75px + var(--safe-bottom));
-      left: 0;
-      right: 0;
-      z-index: 10;
+      display: flex; gap: 8px; padding: 0 16px; align-items: center;
+      position: fixed; bottom: calc(75px + var(--safe-bottom)); left: 0; right: 0; z-index: 10;
       pointer-events: none;
     }
     .map-control-btn {
-      flex: 1;
-      padding: 14px;
-      border-radius: 50px;
-      border: 1px solid rgba(255,255,255,0.3);
-      font-weight: 600;
-      cursor: pointer;
-      font-size: 0.85rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      transition: var(--transition);
-      pointer-events: auto;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      flex: 1; padding: 14px; border-radius: var(--r-pill); border: 1px solid rgba(255,255,255,0.3);
+      font-weight: 700; cursor: pointer; font-size: 0.84rem; display: flex; align-items: center;
+      justify-content: center; gap: 6px; transition: transform 0.15s var(--ease-spring);
+      pointer-events: auto; backdrop-filter: blur(10px); font-family: 'Sora', sans-serif;
     }
     .map-control-btn:active { transform: scale(0.95); }
-    .map-control-btn.primary {
-      background: rgba(230, 57, 70, 0.85);
-      color: white;
-      box-shadow: 0 4px 15px rgba(230, 57, 70, 0.3);
-    }
-    .map-control-btn.primary:active {
-      background: rgba(230, 57, 70, 0.95);
-    }
-    .map-control-btn.secondary {
-      background: rgba(255,255,255,0.85);
-      color: var(--primary);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    }
-    .map-control-btn.secondary:active {
-      background: rgba(255,255,255,0.95);
-    }
-    .map-control-btn svg {
-      width: 16px;
-      height: 16px;
-    }
+    .map-control-btn.primary { background: rgba(214, 72, 63, 0.88); color: white; box-shadow: 0 6px 18px rgba(214,72,63,0.3); }
+    .map-control-btn.secondary { background: rgba(255,255,255,0.88); color: var(--ink); box-shadow: 0 6px 18px rgba(0,0,0,0.1); }
+    .map-control-btn svg { width: 16px; height: 16px; }
 
-    /* Buttons */
+    .route-info-card {
+      position: fixed; left: 16px; right: 16px; bottom: calc(140px + var(--safe-bottom)); z-index: 11;
+      background: white; border-radius: var(--r-lg); padding: 16px 18px; box-shadow: var(--shadow-lg);
+      display: flex; align-items: center; gap: 14px;
+      transform: translate3d(0, 30px, 0); opacity: 0; visibility: hidden; pointer-events: none;
+      transition: transform 0.35s var(--ease-spring), opacity 0.3s var(--ease-out), visibility 0.35s;
+      will-change: transform;
+    }
+    .route-info-card.active { transform: translate3d(0,0,0); opacity: 1; visibility: visible; pointer-events: auto; }
+    .route-info-icon {
+      width: 42px; height: 42px; border-radius: 50%; background: #f8ecdc; color: var(--route);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .route-info-icon svg { width: 20px; height: 20px; }
+    .route-info-body { flex: 1; min-width: 0; }
+    .route-info-body strong { display: block; color: var(--ink); font-size: 0.9rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .route-info-body span { font-size: 0.8rem; color: var(--text-soft); }
+    .route-info-close {
+      flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; background: #f2f1ec; border: none;
+      color: var(--text-soft); cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: transform 0.15s var(--ease-spring);
+    }
+    .route-info-close:active { transform: scale(0.9); background: #fbe5e3; color: var(--accent); }
+    .route-info-close svg { width: 14px; height: 14px; }
+
+    /* ---- Buttons generic ---- */
     .mobile-btn {
-      width: 100%; 
-      padding: 14px; 
-      border-radius: 12px;
-      font-weight: 600; 
-      cursor: pointer; 
-      font-size: 0.9rem;
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      gap: 8px;
-      border: none; 
-      transition: var(--transition);
+      width: 100%; padding: 14px; border-radius: var(--r-sm); font-weight: 700; cursor: pointer;
+      font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px;
+      border: none; transition: transform 0.15s var(--ease-spring), background 0.2s;
+      font-family: 'Sora', sans-serif;
     }
     .mobile-btn:active { transform: scale(0.98); }
-    .mobile-btn-primary {
-      background: linear-gradient(135deg, var(--accent), var(--accent-hover));
-      color: white; 
-      box-shadow: 0 4px 15px rgba(230, 57, 70, 0.3);
-    }
-    .mobile-btn-secondary { background: #f5f5f5; color: var(--primary); }
-    .mobile-btn-secondary:active { background: #e0e0e0; }
+    .mobile-btn-primary { background: var(--accent); color: white; box-shadow: 0 6px 16px rgba(214,72,63,0.28); }
+    .mobile-btn-primary:active { background: var(--accent-hover); }
+    .mobile-btn-secondary { background: #f2f1ec; color: var(--ink); }
+    .mobile-btn-secondary:active { background: #e7e5dc; }
 
-    /* Profile Drawer */
+    /* ---- Profile Drawer ---- */
     .profile-drawer {
-      position: fixed; 
-      top: 0; 
-      right: -100%; 
-      width: 85%; 
-      max-width: 360px;
-      height: 100%; 
-      height: 100vh;
-      height: 100dvh;
-      background: white; 
-      z-index: 9998; 
-      transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: -10px 0 30px rgba(0,0,0,0.2);
+      position: fixed; top: 0; right: -100%; width: 85%; max-width: 360px;
+      height: 100%; height: 100vh; height: 100dvh; background: white; z-index: 9998;
+      transition: right 0.35s var(--ease-spring);
+      box-shadow: -14px 0 34px rgba(27,27,47,0.22);
       padding-top: calc(20px + var(--safe-top));
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
+      overflow-y: auto; -webkit-overflow-scrolling: touch;
+      display: flex; flex-direction: column;
+      will-change: right;
     }
     .profile-drawer.active { right: 0; }
-    
+
     .profile-drawer-overlay {
-      position: fixed; 
-      inset: 0; 
-      background: rgba(0,0,0,0.5);
-      z-index: 9997; 
-      opacity: 0; 
-      visibility: hidden; 
-      transition: opacity 0.3s, visibility 0.3s;
+      position: fixed; inset: 0; background: rgba(27,27,47,0.5); z-index: 9997;
+      opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s;
     }
     .profile-drawer-overlay.active { opacity: 1; visibility: visible; }
-    
+
     .profile-drawer-close {
-      position: absolute;
-      top: calc(16px + var(--safe-top));
-      left: 16px;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.2);
-      border: none;
-      color: white;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: var(--transition);
-      z-index: 2;
+      position: absolute; top: calc(16px + var(--safe-top)); left: 16px; width: 36px; height: 36px;
+      border-radius: 50%; background: rgba(255,255,255,0.2); border: none; color: white; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; transition: transform 0.15s var(--ease-spring); z-index: 2;
     }
-    .profile-drawer-close:active {
-      background: rgba(255,255,255,0.3);
-      transform: scale(0.9);
-    }
-    .profile-drawer-close svg {
-      width: 20px;
-      height: 20px;
-    }
-    
+    .profile-drawer-close:active { background: rgba(255,255,255,0.3); transform: scale(0.9); }
+    .profile-drawer-close svg { width: 20px; height: 20px; }
+
     .profile-drawer-header {
-      padding: 60px 20px 24px;
-      text-align: center;
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
-      color: white;
-      position: relative;
+      padding: 60px 20px 24px; text-align: center;
+      background: linear-gradient(135deg, var(--ink), var(--ink-2));
+      color: white; position: relative;
     }
     .profile-drawer-avatar {
-      width: 70px; 
-      height: 70px; 
-      border-radius: 50%;
+      width: 68px; height: 68px; border-radius: 50%;
       background: linear-gradient(135deg, var(--accent), var(--accent-hover));
-      display: inline-flex; 
-      align-items: center; 
-      justify-content: center;
-      font-size: 1.8rem; 
-      font-weight: 800; 
-      margin-bottom: 12px;
-      border: 3px solid rgba(255,255,255,0.3);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: 'Sora', sans-serif; font-size: 1.7rem; font-weight: 800; margin-bottom: 12px;
+      border: 3px solid rgba(255,255,255,0.28);
     }
-    .profile-drawer-name { 
-      font-size: 1.1rem; 
-      font-weight: 700; 
-    }
-    .profile-drawer-email { 
-      font-size: 0.8rem; 
-      opacity: 0.8; 
-    }
-    
-    .profile-drawer-body {
-      padding: 16px;
-      flex: 1;
-    }
+    .profile-drawer-name { font-family: 'Sora', sans-serif; font-size: 1.05rem; font-weight: 700; }
+    .profile-drawer-email { font-size: 0.78rem; opacity: 0.75; margin-top: 2px; }
+
+    .profile-drawer-body { padding: 16px; flex: 1; }
     .profile-drawer-item {
-      padding: 16px; 
-      border-radius: 12px; 
-      cursor: pointer;
-      display: flex; 
-      align-items: center; 
-      gap: 12px;
-      transition: var(--transition); 
-      font-weight: 500;
-      margin-bottom: 4px;
+      padding: 15px 14px; border-radius: var(--r-sm); cursor: pointer;
+      display: flex; align-items: center; gap: 12px;
+      transition: background 0.15s var(--ease-out); font-weight: 600; font-size: 0.9rem; margin-bottom: 4px;
     }
-    .profile-drawer-item:active { 
-      background: #f5f5f5; 
-      transform: scale(0.98); 
-    }
-    .profile-drawer-item svg { 
-      width: 20px; 
-      height: 20px; 
-      color: var(--accent);
-      flex-shrink: 0;
-    }
-    .profile-drawer-divider {
-      height: 1px; 
-      background: var(--border); 
-      margin: 8px 0;
-    }
+    .profile-drawer-item:active { background: #f4f3ee; }
+    .profile-drawer-item svg { width: 19px; height: 19px; color: var(--accent); flex-shrink: 0; }
+    .profile-drawer-divider { height: 1px; background: var(--border); margin: 8px 4px; }
   </style>
 </head>
 <body>
 
   <div class="spinner-overlay" id="spinnerOverlay"><div class="spinner-big"></div></div>
   <div class="toast" id="toast"></div>
-  
+
   <!-- Profile Drawer -->
   <div class="profile-drawer-overlay" id="profileDrawerOverlay" onclick="closeProfileDrawer()"></div>
   <div class="profile-drawer" id="profileDrawer">
     <button class="profile-drawer-close" onclick="closeProfileDrawer()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M6 18L18 6M6 6l12 12"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg>
     </button>
-    <div class="profile-drawer-header" id="profileDrawerHeader">
-      <!-- Se llena dinámicamente -->
-    </div>
-    <div class="profile-drawer-body" id="profileDrawerBody">
-      <!-- Se llena dinámicamente -->
-    </div>
+    <div class="profile-drawer-header" id="profileDrawerHeader"></div>
+    <div class="profile-drawer-body" id="profileDrawerBody"></div>
   </div>
 
   <!-- Modal -->
   <div class="modal-overlay" id="modalOverlay">
-    <div class="modal" id="modalContent">
-      <!-- Contenido dinámico -->
-    </div>
+    <div class="modal" id="modalContent"></div>
   </div>
 
   <!-- ============ APP MÓVIL ============ -->
   <div id="mobileApp">
+
     <!-- Vista Inicio -->
     <div class="mobile-view active" id="mViewInicio">
-      <!-- Carousel - Portada ARRIBA del header -->
       <div class="carousel-container" id="carouselContainer">
         <div class="carousel-slides" id="carouselSlides">
           <div class="carousel-slide" style="background-image: url('https://cdn.sanity.io/images/71jmx9y3/production/f535cedc31a2607ca5d44499f2f8c9a4c865d79a-2260x3243.jpg?auto=format&fit=max&q=75&rect=0,0,2260,1306&w=1130')">
             <div class="carousel-content">
+              <div class="eyebrow">Ara rubrogenys</div>
               <h2>Paraba Roja</h2>
-              <p>Especie endémica de Bolivia en peligro crítico de extinción</p>
+              <p>Especie endémica de Bolivia, en peligro crítico de extinción</p>
               <button class="btn-explore" onclick="mobileNavigate('mViewMapa')">Explorar hábitat</button>
             </div>
           </div>
           <div class="carousel-slide" style="background-image: url('https://images.unsplash.com/photo-1552728089-57bdde30beb3?w=800&auto=format&fit=crop')">
             <div class="carousel-content">
-              <h2>Conservación</h2>
-              <p>Ayúdanos a proteger su hábitat natural en los valles secos</p>
+              <div class="eyebrow">Conservación</div>
+              <h2>Valles secos</h2>
+              <p>Ayúdanos a proteger su hábitat natural registrando lo que observas</p>
               <button class="btn-explore" onclick="mobileNavigate('mViewAvistamientos')">Ver avistamientos</button>
             </div>
           </div>
           <div class="carousel-slide" style="background-image: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&auto=format&fit=crop')">
             <div class="carousel-content">
-              <h2>Comunidad</h2>
-              <p>Únete a la red de observadores y protectores de aves</p>
+              <div class="eyebrow">Comunidad</div>
+              <h2>Red de observadores</h2>
+              <p>Únete a la red que protege y documenta a la paraba roja</p>
               <button class="btn-explore" onclick="openProfileDrawer()">Mi perfil</button>
             </div>
           </div>
@@ -905,7 +597,6 @@
         <div class="carousel-dots" id="carouselDots"></div>
       </div>
 
-      <!-- Header transparente SOBRE la portada -->
       <div class="mobile-header" id="homeHeader">
         <div class="mobile-header-title">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -920,12 +611,9 @@
         </button>
       </div>
 
-      <!-- Clima -->
       <div class="mobile-card">
         <h3>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 3v18m0 0l-4-4m4 4l4-4M3 12h18"/>
-          </svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18m0 0l-4-4m4 4l4-4M3 12h18"/></svg>
           Clima actual
         </h3>
         <div class="mobile-weather">
@@ -937,7 +625,16 @@
         </div>
       </div>
 
-      <!-- Alertas -->
+      <div class="quick-route-card" onclick="mobileNavigate('mViewRutas')">
+        <div class="qr-text">
+          <h4>Rutas hacia hábitats</h4>
+          <p>Traza el camino a un punto de avistamiento</p>
+        </div>
+        <button aria-label="Ver rutas">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
+
       <div class="mobile-card">
         <h3>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -945,28 +642,40 @@
           </svg>
           Alertas ambientales
         </h3>
-        <div id="mAlertasContainer"></div>
+        <div id="mAlertasContainer">
+          <div class="skeleton-item"><div class="skeleton w60"></div><div class="skeleton w80"></div></div>
+        </div>
       </div>
     </div>
 
     <!-- Vista Mapa -->
     <div class="mobile-view" id="mViewMapa">
-      <!-- Mapa a pantalla completa (detrás de todo) -->
       <div class="mobile-map-container">
         <div class="mobile-map" id="mMap"></div>
       </div>
 
-      <!-- Header compacto flotante sobre el mapa -->
       <div class="mobile-header map-header" style="position: fixed; z-index: 100;">
         <div class="mobile-header-title">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
           </svg>
-          <span>Mapa</span>
+          <span id="mapHeaderLabel">Mapa</span>
         </div>
       </div>
 
-      <!-- Controles flotantes sobre el mapa -->
+      <div class="route-info-card" id="routeInfoCard">
+        <div class="route-info-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+        </div>
+        <div class="route-info-body">
+          <strong id="routeInfoName">—</strong>
+          <span id="routeInfoMeta">—</span>
+        </div>
+        <button class="route-info-close" onclick="cerrarRuta()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
       <div class="map-controls">
         <button class="map-control-btn primary" id="mBtnUbicacion">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -976,9 +685,7 @@
           Mi ubicación
         </button>
         <button class="map-control-btn secondary" id="mBtnAvistamientos">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 17l6-6 4 4 8-8m0 0v7m0-7h-7"/>
-          </svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8m0 0v7m0-7h-7"/></svg>
           Avistamientos
         </button>
       </div>
@@ -988,27 +695,60 @@
     <div class="mobile-view" id="mViewAvistamientos">
       <div class="mobile-header scrolled" style="position: fixed;">
         <div class="mobile-header-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 17l6-6 4 4 8-8m0 0v7m0-7h-7"/>
-          </svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8m0 0v7m0-7h-7"/></svg>
           <span>Avistamientos</span>
         </div>
       </div>
       <div style="height: calc(56px + var(--safe-top));"></div>
       <div class="mobile-card">
+        <h3>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M9 20H4v-2a3 3 0 015.356-1.857M9 20v-2a3 3 0 015.356-1.857M15 7a3 3 0 11-6 0 3 3 0 016 0zM6 8a2 2 0 11-4 0 2 2 0 014 0zM22 8a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+          Comunidad
+        </h3>
         <div id="mAvistamientosList">
-          <p style="text-align:center;color:#999;">Cargando avistamientos...</p>
+          <div class="skeleton-item"><div class="skeleton w40"></div><div class="skeleton w60"></div></div>
+          <div class="skeleton-item"><div class="skeleton w40"></div><div class="skeleton w60"></div></div>
+          <div class="skeleton-item"><div class="skeleton w40"></div><div class="skeleton w60"></div></div>
         </div>
         <button class="mobile-btn mobile-btn-primary" style="margin-top:16px;" onclick="abrirModalRegistrarAvistamiento()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
-            <path d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           Registrar avistamiento
         </button>
       </div>
     </div>
 
-    <!-- Bottom Navigation - REDISEÑADA -->
+    <!-- Vista Rutas (NUEVA) -->
+    <div class="mobile-view" id="mViewRutas">
+      <div class="mobile-header scrolled" style="position: fixed;">
+        <div class="mobile-header-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="6" cy="19" r="2.4"/><circle cx="18" cy="5" r="2.4"/>
+            <path d="M8.4 19h7.6a3.2 3.2 0 000-6.4H8a3.2 3.2 0 010-6.4h7.6"/>
+          </svg>
+          <span>Rutas</span>
+        </div>
+      </div>
+      <div style="height: calc(56px + var(--safe-top));"></div>
+      <div class="mobile-card">
+        <h3>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="6" cy="19" r="2.4"/><circle cx="18" cy="5" r="2.4"/>
+            <path d="M8.4 19h7.6a3.2 3.2 0 000-6.4H8a3.2 3.2 0 010-6.4h7.6"/>
+          </svg>
+          Puntos de avistamiento
+        </h3>
+        <div class="ruta-filter-note" id="rutaGeoNote">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          <span>Activa tu ubicación para ver la distancia a cada punto</span>
+        </div>
+        <div id="mRutasList">
+          <div class="skeleton-item"><div class="skeleton w60"></div><div class="skeleton w40"></div></div>
+          <div class="skeleton-item"><div class="skeleton w60"></div><div class="skeleton w40"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Navigation: 4 secciones -->
     <div class="mobile-bottom-nav">
       <button class="mobile-nav-item active" onclick="mobileNavigate('mViewInicio')" id="mNavInicio">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1023,15 +763,21 @@
         <span>Mapa</span>
       </button>
       <button class="mobile-nav-item" onclick="mobileNavigate('mViewAvistamientos')" id="mNavAvistamientos">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M3 17l6-6 4 4 8-8m0 0v7m0-7h-7"/>
-        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8m0 0v7m0-7h-7"/></svg>
         <span>Avistamientos</span>
+      </button>
+      <button class="mobile-nav-item" onclick="mobileNavigate('mViewRutas')" id="mNavRutas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="6" cy="19" r="2.4"/><circle cx="18" cy="5" r="2.4"/>
+          <path d="M8.4 19h7.6a3.2 3.2 0 000-6.4H8a3.2 3.2 0 010-6.4h7.6"/>
+        </svg>
+        <span>Rutas</span>
       </button>
     </div>
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
@@ -1044,30 +790,48 @@
     let mMarkerUsuario;
     let ubicacionActual = { lat: -17.7833, lng: -63.1667 };
     let ubicacionDetectada = null;
+    let geoDisponible = false;
     let currentMView = 'mViewInicio';
     let carouselIndex = 0;
     let carouselInterval;
+    let routingControl = null;
+    let rutasCache = [];
+
+    const iconoUsuario = () => L.divIcon({
+      html: '<div style="width:16px;height:16px;background:#3E7C8C;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.4);"></div>',
+      iconSize: [16, 16], iconAnchor: [8, 8]
+    });
+    const iconoDestino = () => L.divIcon({
+      html: '<div style="width:18px;height:18px;background:#C6862E;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.4);"></div>',
+      iconSize: [18, 18], iconAnchor: [9, 18]
+    });
 
     // ============ NAVEGACIÓN ============
     function mobileNavigate(view) {
       currentMView = view;
       document.querySelectorAll('.mobile-view').forEach(v => v.classList.remove('active'));
       document.querySelectorAll('.mobile-nav-item').forEach(n => n.classList.remove('active'));
-      
+
       document.getElementById(view).classList.add('active');
-      
+
       const navMap = {
         'mViewInicio': 'mNavInicio',
         'mViewMapa': 'mNavMapa',
-        'mViewAvistamientos': 'mNavAvistamientos'
+        'mViewAvistamientos': 'mNavAvistamientos',
+        'mViewRutas': 'mNavRutas'
       };
-      document.getElementById(navMap[view]).classList.add('active');
-      
+      document.getElementById(navMap[view])?.classList.add('active');
+
       if (view === 'mViewMapa' && !mMap) {
         setTimeout(initMMap, 100);
+      } else if (view === 'mViewMapa' && mMap) {
+        setTimeout(() => mMap.invalidateSize(), 100);
       }
       if (view === 'mViewAvistamientos') {
         cargarAvistamientosMobile();
+      }
+      if (view === 'mViewRutas') {
+        cargarRutasMobile();
       }
     }
 
@@ -1077,7 +841,7 @@
       const overlay = document.getElementById('profileDrawerOverlay');
       const header = document.getElementById('profileDrawerHeader');
       const body = document.getElementById('profileDrawerBody');
-      
+
       if (currentUser) {
         const n = currentUser.nombre || currentUser.usuario || 'Usuario';
         header.innerHTML = `
@@ -1086,11 +850,16 @@
           <div class="profile-drawer-email">${currentUser.email || ''}</div>
         `;
         body.innerHTML = `
-          <div class="profile-drawer-item" onclick="closeProfileDrawer();mobileNavigate('mViewAvistamientos');">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M3 17l6-6 4 4 8-8m0 0v7m0-7h-7"/>
-            </svg>
+          <div class="profile-drawer-item" onclick="closeProfileDrawer();misAvistamientos();">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8m0 0v7m0-7h-7"/></svg>
             Mis Avistamientos
+          </div>
+          <div class="profile-drawer-item" onclick="closeProfileDrawer();mobileNavigate('mViewRutas');">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="6" cy="19" r="2.4"/><circle cx="18" cy="5" r="2.4"/>
+              <path d="M8.4 19h7.6a3.2 3.2 0 000-6.4H8a3.2 3.2 0 010-6.4h7.6"/>
+            </svg>
+            Rutas
           </div>
           <div class="profile-drawer-item" onclick="closeProfileDrawer();misFavoritos();">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1099,49 +868,53 @@
             Mis Favoritos
           </div>
           <div class="profile-drawer-divider"></div>
-          <div class="profile-drawer-item" onclick="closeProfileDrawer();cerrarSesion();" style="color:#dc3545;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-            </svg>
+          <div class="profile-drawer-item" onclick="closeProfileDrawer();cerrarSesion();" style="color:#C0392B;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
             Cerrar Sesión
           </div>
         `;
       } else {
         header.innerHTML = `
-          <div class="profile-drawer-avatar" style="background:#666;">👤</div>
+          <div class="profile-drawer-avatar" style="background:#4a4a63;">👤</div>
           <div class="profile-drawer-name">Invitado</div>
           <div class="profile-drawer-email">Inicia sesión para más funciones</div>
         `;
         body.innerHTML = `
           <div class="profile-drawer-item" onclick="closeProfileDrawer();abrirModal('login');">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
             Iniciar Sesión
           </div>
           <div class="profile-drawer-item" onclick="closeProfileDrawer();abrirModal('register');">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
             Crear Cuenta
+          </div>
+          <div class="profile-drawer-divider"></div>
+          <div class="profile-drawer-item" onclick="closeProfileDrawer();mobileNavigate('mViewRutas');">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="6" cy="19" r="2.4"/><circle cx="18" cy="5" r="2.4"/>
+              <path d="M8.4 19h7.6a3.2 3.2 0 000-6.4H8a3.2 3.2 0 010-6.4h7.6"/>
+            </svg>
+            Rutas
           </div>
         `;
       }
-      
+
       drawer.classList.add('active');
       overlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
     }
 
     function closeProfileDrawer() {
       document.getElementById('profileDrawer').classList.remove('active');
       document.getElementById('profileDrawerOverlay').classList.remove('active');
+      document.body.style.overflow = '';
     }
 
     // ============ SESIÓN ============
-    function cargarSesion() { 
-      const s = localStorage.getItem('paraba_user'); 
-      if (s) { currentUser = JSON.parse(s); return true; } 
-      return false; 
+    function cargarSesion() {
+      const s = localStorage.getItem('paraba_user');
+      if (s) { currentUser = JSON.parse(s); return true; }
+      return false;
     }
     function guardarSesion() { if (currentUser) localStorage.setItem('paraba_user', JSON.stringify(currentUser)); }
     function limpiarSesion() { localStorage.removeItem('paraba_user'); }
@@ -1152,76 +925,57 @@
       if (tipo === 'login') {
         html = `<div class="modal-handle"></div>
           <div class="modal-header">
-            <h2>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
-              </svg>
-              Iniciar Sesión
-            </h2>
-            <button class="btn-close-modal" onclick="cerrarModal()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M6 18L18 6M6 6l12 12"/>
-              </svg>
-            </button>
+            <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>Iniciar Sesión</h2>
+            <button class="btn-close-modal" onclick="cerrarModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg></button>
           </div>
-          <input type="text" id="loginUsuario" placeholder="Usuario o correo electrónico">
-          <input type="password" id="loginPassword" placeholder="Contraseña">
-          <button class="btn-primary" onclick="iniciarSesion()">Ingresar</button>
+          <label class="field-label">Usuario o correo</label>
+          <input type="text" id="loginUsuario" placeholder="usuario@correo.com" autocomplete="username">
+          <label class="field-label">Contraseña</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
+          <button class="btn-primary" id="btnLogin" onclick="iniciarSesion()">Ingresar</button>
           <p class="link">¿No tienes cuenta? <a onclick="abrirModal('register')">Registrarse</a></p>`;
       } else if (tipo === 'register') {
         html = `<div class="modal-handle"></div>
           <div class="modal-header">
-            <h2>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
-              </svg>
-              Crear Cuenta
-            </h2>
-            <button class="btn-close-modal" onclick="cerrarModal()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M6 18L18 6M6 6l12 12"/>
-              </svg>
-            </button>
+            <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>Crear Cuenta</h2>
+            <button class="btn-close-modal" onclick="cerrarModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg></button>
           </div>
-          <input type="text" id="regNombre" placeholder="Nombre completo">
-          <input type="email" id="regEmail" placeholder="Correo electrónico">
-          <input type="text" id="regUsuario" placeholder="Nombre de usuario">
-          <input type="password" id="regPassword" placeholder="Contraseña (mín. 6 caracteres)">
-          <button class="btn-primary" onclick="registrarse()">Crear cuenta</button>
+          <label class="field-label">Nombre completo</label>
+          <input type="text" id="regNombre" placeholder="Tu nombre" autocomplete="name">
+          <label class="field-label">Correo electrónico</label>
+          <input type="email" id="regEmail" placeholder="tu@correo.com" autocomplete="email">
+          <label class="field-label">Usuario</label>
+          <input type="text" id="regUsuario" placeholder="nombre de usuario" autocomplete="off">
+          <label class="field-label">Contraseña</label>
+          <input type="password" id="regPassword" placeholder="mín. 6 caracteres" autocomplete="new-password">
+          <button class="btn-primary" id="btnRegister" onclick="registrarse()">Crear cuenta</button>
           <p class="link">¿Ya tienes cuenta? <a onclick="abrirModal('login')">Iniciar sesión</a></p>`;
       } else if (tipo === 'favoritos') {
         html = `<div class="modal-handle"></div>
           <div class="modal-header">
             <h2>Mis Favoritos</h2>
-            <button class="btn-close-modal" onclick="cerrarModal()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M6 18L18 6M6 6l12 12"/>
-              </svg>
-            </button>
+            <button class="btn-close-modal" onclick="cerrarModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg></button>
           </div>
-          <div id="favoritosListContent"><p style="text-align:center;color:#888;">Cargando...</p></div>`;
+          <div id="favoritosListContent">
+            <div class="skeleton-item"><div class="skeleton w60"></div><div class="skeleton w40"></div></div>
+          </div>`;
       } else if (tipo === 'misAvistamientos') {
         html = `<div class="modal-handle"></div>
           <div class="modal-header">
             <h2>Mis Avistamientos</h2>
-            <button class="btn-close-modal" onclick="cerrarModal()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M6 18L18 6M6 6l12 12"/>
-              </svg>
-            </button>
+            <button class="btn-close-modal" onclick="cerrarModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg></button>
           </div>
-          <div id="misAvistamientosContent"><p style="text-align:center;color:#888;">Cargando...</p></div>`;
+          <div id="misAvistamientosContent">
+            <div class="skeleton-item"><div class="skeleton w60"></div><div class="skeleton w40"></div></div>
+          </div>`;
       } else if (tipo === 'registrarAvistamiento') {
         ubicacionDetectada = null;
         html = `<div class="modal-handle"></div>
           <div class="modal-header">
-            <h2>Registrar Avistamiento</h2>
-            <button class="btn-close-modal" onclick="cerrarModal()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M6 18L18 6M6 6l12 12"/>
-              </svg>
-            </button>
+            <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Registrar Avistamiento</h2>
+            <button class="btn-close-modal" onclick="cerrarModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg></button>
           </div>
+          <label class="field-label">Especie</label>
           <select id="avistEspecie">
             <option value="Paraba Roja">Paraba Roja (Ara rubrogenys)</option>
             <option value="Paraba Frente Roja">Paraba Frente Roja</option>
@@ -1229,41 +983,51 @@
             <option value="Guacamayo Verde">Guacamayo Verde</option>
             <option value="Otra especie">Otra especie</option>
           </select>
-          <button class="btn-secondary" id="btnUsarUbicacion" onclick="usarUbicacionActual()">📍 Usar ubicación actual</button>
+          <button class="btn-secondary" id="btnUsarUbicacion" onclick="usarUbicacionActual()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            Usar ubicación actual
+          </button>
           <div id="ubicacionInfo" style="display:none;"></div>
+          <label class="field-label">Lugar</label>
           <input type="text" id="avistLugar" placeholder="Lugar del avistamiento">
-          <input type="text" id="avistCiudad" placeholder="Ciudad / Departamento">
-          <input type="number" id="avistCantidad" placeholder="Cantidad de aves avistadas" min="1" value="1">
+          <label class="field-label">Ciudad / Departamento</label>
+          <input type="text" id="avistCiudad" placeholder="Ej. Cochabamba">
+          <label class="field-label">Cantidad de aves</label>
+          <input type="number" id="avistCantidad" placeholder="Cantidad" min="1" value="1">
+          <label class="field-label">Fecha</label>
           <input type="date" id="avistFecha">
-          <textarea id="avistDescripcion" placeholder="Descripción del avistamiento (opcional)" rows="3"></textarea>
-          <button class="btn-primary" onclick="registrarAvistamiento()">Registrar avistamiento</button>`;
+          <label class="field-label">Descripción (opcional)</label>
+          <textarea id="avistDescripcion" placeholder="Detalles del avistamiento..." rows="3"></textarea>
+          <button class="btn-primary" id="btnRegistrarAvist" onclick="registrarAvistamiento()">Registrar avistamiento</button>`;
       }
-      
+
       document.getElementById('modalContent').innerHTML = html;
       document.getElementById('modalOverlay').classList.add('active');
-      
+      document.body.style.overflow = 'hidden';
+
       if (tipo === 'favoritos') cargarFavoritosModal();
       if (tipo === 'misAvistamientos') cargarMisAvistamientosModal();
       if (tipo === 'registrarAvistamiento') document.getElementById('avistFecha').value = new Date().toISOString().split('T')[0];
     }
 
-    function abrirModalRegistrarAvistamiento() { 
-      currentUser ? abrirModal('registrarAvistamiento') : abrirModal('login'); 
+    function abrirModalRegistrarAvistamiento() {
+      currentUser ? abrirModal('registrarAvistamiento') : abrirModal('login');
     }
-    
-    function cerrarModal() { 
-      document.getElementById('modalOverlay').classList.remove('active'); 
+
+    function cerrarModal() {
+      document.getElementById('modalOverlay').classList.remove('active');
+      document.body.style.overflow = '';
     }
-    
-    document.getElementById('modalOverlay').addEventListener('click', e => { 
-      if (e.target === e.currentTarget) cerrarModal(); 
+
+    document.getElementById('modalOverlay').addEventListener('click', e => {
+      if (e.target === e.currentTarget) cerrarModal();
     });
 
     function usarUbicacionActual() {
       const btn = document.getElementById('btnUsarUbicacion');
       if (!btn) return;
       btn.disabled = true; btn.innerHTML = 'Obteniendo ubicación...';
-      
+
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(async (pos) => {
           ubicacionDetectada = { lat: pos.coords.latitude, lng: pos.coords.longitude };
@@ -1273,19 +1037,19 @@
             const a = geo.address || {};
             document.getElementById('avistLugar').value = a.road || a.neighbourhood || a.suburb || 'Ubicación actual';
             document.getElementById('avistCiudad').value = [a.city || a.town || a.village, a.state].filter(Boolean).join(', ') || 'Bolivia';
-          } catch (e) { 
-            document.getElementById('avistLugar').value = 'Ubicación actual'; 
-            document.getElementById('avistCiudad').value = 'Bolivia'; 
+          } catch (e) {
+            document.getElementById('avistLugar').value = 'Ubicación actual';
+            document.getElementById('avistCiudad').value = 'Bolivia';
           }
           const info = document.getElementById('ubicacionInfo');
           info.style.display = 'block'; info.className = 'ubicacion-info';
           info.innerHTML = '✅ Ubicación detectada correctamente';
           btn.disabled = false; btn.innerHTML = '📍 Usar ubicación actual';
           mostrarToast('Ubicación detectada', 'success');
-        }, () => { 
-          btn.disabled = false; btn.innerHTML = '📍 Usar ubicación actual'; 
-          mostrarToast('No se pudo acceder a la ubicación', 'error'); 
-          ubicacionDetectada = null; 
+        }, () => {
+          btn.disabled = false; btn.innerHTML = '📍 Usar ubicación actual';
+          mostrarToast('No se pudo acceder a la ubicación', 'error');
+          ubicacionDetectada = null;
         }, { enableHighAccuracy: true, timeout: 10000 });
       }
     }
@@ -1295,26 +1059,25 @@
       const usuario = document.getElementById('loginUsuario')?.value?.trim();
       const password = document.getElementById('loginPassword')?.value;
       if (!usuario || !password) { mostrarToast('Completa todos los campos', 'error'); return; }
-      
+
+      const btn = document.getElementById('btnLogin');
+      if (btn) { btn.disabled = true; btn.textContent = 'Ingresando...'; }
       mostrarSpinner(true);
+
       const { data, error } = await sb.from('users').select('*').or(`email.eq.${usuario},usuario.eq.${usuario}`).limit(1);
-      
-      if (error || !data || data.length === 0) { 
-        mostrarToast('Usuario o contraseña incorrectos', 'error'); 
-        mostrarSpinner(false); 
-        return; 
+
+      if (error || !data || data.length === 0 || data[0].password !== password) {
+        mostrarToast('Usuario o contraseña incorrectos', 'error');
+        mostrarSpinner(false);
+        if (btn) { btn.disabled = false; btn.textContent = 'Ingresar'; }
+        return;
       }
-      if (data[0].password !== password) { 
-        mostrarToast('Usuario o contraseña incorrectos', 'error'); 
-        mostrarSpinner(false); 
-        return; 
-      }
-      
+
       currentUser = { id: data[0].id, nombre: data[0].nombre, email: data[0].email, usuario: data[0].usuario };
-      guardarSesion(); 
+      guardarSesion();
       cerrarModal();
       mostrarToast('Bienvenido, ' + currentUser.nombre + '!', 'success');
-      cargarAvistamientosMobile(); 
+      if (currentMView === 'mViewAvistamientos') cargarAvistamientosMobile();
       mostrarSpinner(false);
     }
 
@@ -1323,87 +1086,84 @@
       const email = document.getElementById('regEmail')?.value?.trim();
       const usuario = document.getElementById('regUsuario')?.value?.trim();
       const password = document.getElementById('regPassword')?.value;
-      
-      if (!nombre || !email || !usuario || !password) { 
-        mostrarToast('Completa todos los campos', 'error'); 
-        return; 
-      }
-      if (password.length < 6) { 
-        mostrarToast('Contraseña mín. 6 caracteres', 'error'); 
-        return; 
-      }
-      
+
+      if (!nombre || !email || !usuario || !password) { mostrarToast('Completa todos los campos', 'error'); return; }
+      if (password.length < 6) { mostrarToast('Contraseña mín. 6 caracteres', 'error'); return; }
+
+      const btn = document.getElementById('btnRegister');
+      if (btn) { btn.disabled = true; btn.textContent = 'Creando cuenta...'; }
       mostrarSpinner(true);
+
       const { data: existe } = await sb.from('users').select('id').or(`email.eq.${email},usuario.eq.${usuario}`).limit(1);
-      
-      if (existe && existe.length > 0) { 
-        mostrarToast('El email o usuario ya existe', 'error'); 
-        mostrarSpinner(false); 
-        return; 
+
+      if (existe && existe.length > 0) {
+        mostrarToast('El email o usuario ya existe', 'error');
+        mostrarSpinner(false);
+        if (btn) { btn.disabled = false; btn.textContent = 'Crear cuenta'; }
+        return;
       }
-      
+
       const { error } = await sb.from('users').insert({ nombre, email, usuario, password });
-      
-      if (error) { 
-        mostrarToast('Error: ' + error.message, 'error'); 
-      } else { 
-        cerrarModal(); 
-        mostrarToast('Cuenta creada! Ya puedes iniciar sesión', 'success'); 
-        abrirModal('login'); 
+
+      if (error) {
+        mostrarToast('Error: ' + error.message, 'error');
+        if (btn) { btn.disabled = false; btn.textContent = 'Crear cuenta'; }
+      } else {
+        cerrarModal();
+        mostrarToast('Cuenta creada! Ya puedes iniciar sesión', 'success');
+        abrirModal('login');
       }
       mostrarSpinner(false);
     }
 
-    function cerrarSesion() { 
-      currentUser = null; 
-      limpiarSesion(); 
-      closeProfileDrawer(); 
-      mostrarToast('Sesión cerrada', 'info'); 
-      cargarAvistamientosMobile(); 
+    function cerrarSesion() {
+      currentUser = null;
+      limpiarSesion();
+      closeProfileDrawer();
+      mostrarToast('Sesión cerrada', 'info');
+      if (currentMView === 'mViewAvistamientos') cargarAvistamientosMobile();
     }
-    
-    function misFavoritos() { 
-      currentUser ? abrirModal('favoritos') : abrirModal('login'); 
-    }
-    function misAvistamientos() { 
-      currentUser ? abrirModal('misAvistamientos') : abrirModal('login'); 
-    }
+
+    function misFavoritos() { currentUser ? abrirModal('favoritos') : abrirModal('login'); }
+    function misAvistamientos() { currentUser ? abrirModal('misAvistamientos') : abrirModal('login'); }
 
     // ============ CARGAR DATOS ============
     async function cargarAvistamientosMobile() {
       const container = document.getElementById('mAvistamientosList');
       if (!container) return;
-      
-      container.innerHTML = '<p style="text-align:center;color:#999;">Cargando avistamientos...</p>';
-      
+
       const { data, error } = await sb.from('avistamientos')
         .select('id, especie, cantidad, lugar, ciudad, descripcion, fecha_avistamiento, created_at, user_id, users(nombre, usuario)')
         .order('created_at', { ascending: false })
-        .limit(10);
-      
-      if (error || !data) { 
-        container.innerHTML = '<p style="text-align:center;color:#999;">Error al cargar</p>'; 
-        return; 
+        .limit(15);
+
+      if (error || !data) {
+        container.innerHTML = `<div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+          <p>No se pudo cargar la lista de avistamientos</p>
+        </div>`;
+        return;
       }
-      if (data.length === 0) { 
-        container.innerHTML = '<div style="text-align:center;padding:20px;"><p style="color:#999;">No hay avistamientos registrados</p></div>'; 
-        return; 
+      if (data.length === 0) {
+        container.innerHTML = `<div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 17l6-6 4 4 8-8m0 0v7m0-7h-7"/></svg>
+          <p>Aún no hay avistamientos registrados. ¡Sé el primero!</p>
+        </div>`;
+        return;
       }
-      
+
       container.innerHTML = data.map(a => {
         const nombreUsuario = a.users?.nombre || a.users?.usuario || 'Usuario anónimo';
         const fecha = new Date(a.fecha_avistamiento || a.created_at).toLocaleDateString('es-BO', { year: 'numeric', month: 'short', day: 'numeric' });
-        
+
         return `<div class="mobile-avistamiento-item">
-          <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-            <strong style="color:var(--primary);font-size:0.85rem;">${nombreUsuario}</strong>
-            <small style="color:#999;font-size:0.7rem;">${fecha}</small>
+          <div class="avistamiento-top">
+            <span class="avistamiento-user">${nombreUsuario}</span>
+            <span class="avistamiento-date">${fecha}</span>
           </div>
-          <div style="color:var(--accent);font-weight:600;font-size:0.9rem;">${a.especie}</div>
-          ${a.lugar||a.ciudad?`<div style="font-size:0.8rem;color:#666;margin-top:3px;">${[a.lugar,a.ciudad].filter(Boolean).join(', ')}</div>`:''}
-          <span style="background:var(--accent);color:white;padding:2px 8px;border-radius:12px;font-size:0.7rem;font-weight:600;display:inline-block;margin-top:6px;">
-            ${a.cantidad} ${a.cantidad==1?'ave':'aves'}
-          </span>
+          <div class="avistamiento-especie">${a.especie}</div>
+          ${a.lugar || a.ciudad ? `<div class="avistamiento-lugar">${[a.lugar, a.ciudad].filter(Boolean).join(', ')}</div>` : ''}
+          <span class="badge-count">${a.cantidad} ${a.cantidad == 1 ? 'ave' : 'aves'}</span>
         </div>`;
       }).join('');
     }
@@ -1411,54 +1171,59 @@
     async function cargarAlertas() {
       const { data } = await sb.from('alertas')
         .select('*')
-        .in('estado', ['activa','resuelta'])
+        .in('estado', ['activa', 'resuelta'])
         .order('nivel', { ascending: false })
         .limit(10);
-      
+
       const container = document.getElementById('mAlertasContainer');
-      
-      if (!data || data.length === 0) { 
-        if (container) container.innerHTML = '<div class="mobile-alert green">No hay alertas activas</div>';
-        return; 
+      if (!container) return;
+
+      if (!data || data.length === 0) {
+        container.innerHTML = '<div class="mobile-alert green">No hay alertas activas</div>';
+        return;
       }
-      
+
       const html = data.map(a => {
-        let c = 'orange'; 
-        if(a.nivel === 'alto' || a.nivel === 'critico') c = 'red'; 
-        if(a.nivel === 'bajo') c = 'green';
-        
+        let c = 'orange';
+        if (a.nivel === 'alto' || a.nivel === 'critico') c = 'red';
+        if (a.nivel === 'bajo') c = 'green';
+
         return `<div class="mobile-alert ${c}">
           <strong>${a.titulo}</strong><br>
           <small>${(a.descripcion || '').substring(0, 60)}...</small>
         </div>`;
       }).join('');
-      
-      if (container) container.innerHTML = html;
+
+      container.innerHTML = html;
     }
 
     async function cargarFavoritosModal() {
       if (!currentUser) return;
-      
+
       const { data } = await sb.from('favoritos')
         .select('id,ubicaciones(id,nombre,latitud,longitud,ciudad,especie)')
         .eq('user_id', currentUser.id);
-      
+
       const favs = data?.filter(f => f.ubicaciones) || [];
       const c = document.getElementById('favoritosListContent');
-      
-      if (favs.length === 0) { 
-        c.innerHTML = '<div style="text-align:center;padding:20px;"><p style="color:#888;">No tienes favoritos</p></div>'; 
-        return; 
+      if (!c) return;
+
+      if (favs.length === 0) {
+        c.innerHTML = `<div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+          <p>No tienes favoritos todavía</p>
+        </div>`;
+        return;
       }
-      
+
       c.innerHTML = favs.map(f => `
-        <div style="padding:14px;background:#f8f9fa;border-radius:12px;margin:8px 0;display:flex;justify-content:space-between;align-items:center;">
-          <div>
+        <div style="padding:14px;background:#f9f8f6;border-radius:12px;margin:8px 0;display:flex;justify-content:space-between;align-items:center;gap:10px;">
+          <div style="min-width:0;">
             <strong>${f.ubicaciones.nombre}</strong><br>
-            <small style="color:#888;">${f.ubicaciones.ciudad || ''} · ${f.ubicaciones.especie || 'Paraba Roja'}</small>
+            <small style="color:#9a988f;">${f.ubicaciones.ciudad || ''} · ${f.ubicaciones.especie || 'Paraba Roja'}</small>
           </div>
-          <button onclick="navegarAUbicacion(${f.ubicaciones.latitud},${f.ubicaciones.longitud})" 
-                  style="padding:8px 14px;background:var(--info);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:0.8rem;">
+          <button onclick="cerrarModal();navegarAUbicacion(${f.ubicaciones.latitud},${f.ubicaciones.longitud})"
+                  style="padding:9px 14px;background:var(--teal);color:#fff;border:none;border-radius:999px;cursor:pointer;font-size:0.78rem;font-weight:700;flex-shrink:0;">
             Ir
           </button>
         </div>
@@ -1467,155 +1232,261 @@
 
     async function cargarMisAvistamientosModal() {
       if (!currentUser) return;
-      
+
       const { data } = await sb.from('avistamientos')
         .select('*')
         .eq('user_id', currentUser.id)
         .order('created_at', { ascending: false });
-      
+
       const c = document.getElementById('misAvistamientosContent');
       if (!c) return;
-      
-      if (!data || data.length === 0) { 
-        c.innerHTML = '<div style="text-align:center;padding:20px;"><p style="color:#888;">No has registrado avistamientos</p></div>'; 
-        return; 
+
+      if (!data || data.length === 0) {
+        c.innerHTML = `<div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 17l6-6 4 4 8-8m0 0v7m0-7h-7"/></svg>
+          <p>No has registrado avistamientos todavía</p>
+        </div>`;
+        return;
       }
-      
+
       c.innerHTML = data.map(a => {
-        const fecha = new Date(a.fecha_avistamiento || a.created_at).toLocaleDateString('es-BO', { year:'numeric', month:'long', day:'numeric' });
-        
-        return `<div style="padding:14px;background:#f8f9fa;border-radius:12px;margin:8px 0;border-left:4px solid var(--accent);">
-          <div style="display:flex;justify-content:space-between;">
+        const fecha = new Date(a.fecha_avistamiento || a.created_at).toLocaleDateString('es-BO', { year: 'numeric', month: 'long', day: 'numeric' });
+
+        return `<div class="mobile-avistamiento-item">
+          <div class="avistamiento-top">
             <strong style="color:var(--accent);">${a.especie}</strong>
-            <small style="color:#999;">${fecha}</small>
+            <span class="avistamiento-date">${fecha}</span>
           </div>
-          <div style="margin-top:6px;font-size:0.85rem;color:#666;">
-            ${[a.lugar,a.ciudad].filter(Boolean).join(', ') || 'Sin ubicación'}
-          </div>
-          <span style="background:var(--accent);color:white;padding:2px 10px;border-radius:12px;font-size:0.75rem;font-weight:600;display:inline-block;margin-top:6px;">
-            ${a.cantidad} ${a.cantidad == 1 ? 'ave' : 'aves'}
-          </span>
+          <div class="avistamiento-lugar">${[a.lugar, a.ciudad].filter(Boolean).join(', ') || 'Sin ubicación'}</div>
+          <span class="badge-count">${a.cantidad} ${a.cantidad == 1 ? 'ave' : 'aves'}</span>
         </div>`;
       }).join('');
     }
 
     async function registrarAvistamiento() {
-      if (!currentUser) { 
-        mostrarToast('Inicia sesión primero', 'error'); 
-        return; 
-      }
-      
+      if (!currentUser) { mostrarToast('Inicia sesión primero', 'error'); return; }
+
       const especie = document.getElementById('avistEspecie')?.value;
       const lugar = document.getElementById('avistLugar')?.value?.trim();
       const ciudad = document.getElementById('avistCiudad')?.value?.trim();
       const cantidad = parseInt(document.getElementById('avistCantidad')?.value) || 1;
       const fecha = document.getElementById('avistFecha')?.value;
       const descripcion = document.getElementById('avistDescripcion')?.value?.trim();
-      
+
       if (!especie) { mostrarToast('Selecciona una especie', 'error'); return; }
       if (!lugar && !ciudad) { mostrarToast('Indica lugar o ciudad', 'error'); return; }
       if (!fecha) { mostrarToast('Selecciona una fecha', 'error'); return; }
-      
+
+      const btn = document.getElementById('btnRegistrarAvist');
+      if (btn) { btn.disabled = true; btn.textContent = 'Registrando...'; }
       mostrarSpinner(true);
-      
-      const { error } = await sb.from('avistamientos').insert({ 
-        user_id: currentUser.id, 
-        especie, 
-        cantidad, 
-        lugar: lugar || null, 
-        ciudad: ciudad || null, 
-        descripcion: descripcion || null, 
-        fecha_avistamiento: fecha 
+
+      const { error } = await sb.from('avistamientos').insert({
+        user_id: currentUser.id, especie, cantidad,
+        lugar: lugar || null, ciudad: ciudad || null,
+        descripcion: descripcion || null, fecha_avistamiento: fecha
       });
-      
-      if (error) { 
-        mostrarToast('Error: ' + error.message, 'error'); 
-        mostrarSpinner(false); 
-        return; 
+
+      if (error) {
+        mostrarToast('Error: ' + error.message, 'error');
+        mostrarSpinner(false);
+        if (btn) { btn.disabled = false; btn.textContent = 'Registrar avistamiento'; }
+        return;
       }
-      
+
       if (ubicacionDetectada?.lat && ubicacionDetectada?.lng) {
-        await sb.from('ubicaciones').insert({ 
-          nombre: lugar || ciudad || ('Avistamiento de ' + especie), 
-          descripcion: descripcion || ('Registrado por ' + (currentUser.nombre || currentUser.usuario)), 
-          latitud: ubicacionDetectada.lat, 
-          longitud: ubicacionDetectada.lng, 
-          direccion: lugar || null, 
-          ciudad: ciudad || 'Bolivia', 
-          pais: 'Bolivia', 
-          tipo: 'avistamiento', 
-          estado: 'activo', 
-          especie, 
-          cantidad_avistada: cantidad, 
-          fecha_avistamiento: fecha, 
-          activo: true 
+        await sb.from('ubicaciones').insert({
+          nombre: lugar || ciudad || ('Avistamiento de ' + especie),
+          descripcion: descripcion || ('Registrado por ' + (currentUser.nombre || currentUser.usuario)),
+          latitud: ubicacionDetectada.lat, longitud: ubicacionDetectada.lng,
+          direccion: lugar || null, ciudad: ciudad || 'Bolivia', pais: 'Bolivia',
+          tipo: 'avistamiento', estado: 'activo', especie,
+          cantidad_avistada: cantidad, fecha_avistamiento: fecha, activo: true
         });
       }
-      
-      cerrarModal(); 
+
+      cerrarModal();
       mostrarToast('Avistamiento registrado con éxito', 'success');
-      cargarAvistamientosMobile(); 
+      cargarAvistamientosMobile();
+      if (currentMView === 'mViewRutas') cargarRutasMobile();
       mostrarSpinner(false);
     }
 
     // ============ MAPA ============
     function initMMap() {
-      mMap = L.map('mMap', { 
-        zoomControl: false,
-        scrollWheelZoom: true,
-        attributionControl: false
-      }).setView([ubicacionActual.lat, ubicacionActual.lng], 7);
-      
+      mMap = L.map('mMap', { zoomControl: false, scrollWheelZoom: true, attributionControl: false })
+        .setView([ubicacionActual.lat, ubicacionActual.lng], geoDisponible ? 12 : 7);
+
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(mMap);
-      
-      const iconoUsuario = L.divIcon({
-        html: '<div style="width:16px;height:16px;background:#4285F4;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.4);"></div>',
-        iconSize: [16, 16], 
-        iconAnchor: [8, 8]
-      });
-      
+
+      if (geoDisponible) {
+        mMarkerUsuario = L.marker([ubicacionActual.lat, ubicacionActual.lng], { icon: iconoUsuario() }).addTo(mMap);
+      }
+
       cargarUbicacionesMobile();
-      
-      document.getElementById('mBtnUbicacion').addEventListener('click', function() {
+
+      document.getElementById('mBtnUbicacion').addEventListener('click', function () {
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(pos => {
             const lat = pos.coords.latitude;
             const lng = pos.coords.longitude;
             ubicacionActual = { lat, lng };
-            
-            if (mMarkerUsuario) {
-              mMarkerUsuario.setLatLng([lat, lng]);
-            } else {
-              mMarkerUsuario = L.marker([lat, lng], { icon: iconoUsuario }).addTo(mMap);
-            }
-            
+            geoDisponible = true;
+
+            if (mMarkerUsuario) mMarkerUsuario.setLatLng([lat, lng]);
+            else mMarkerUsuario = L.marker([lat, lng], { icon: iconoUsuario() }).addTo(mMap);
+
             mMap.setView([lat, lng], 15);
             obtenerClima(lat, lng);
+            actualizarNotaGeoRutas();
           }, () => {
             mostrarToast('No se pudo acceder a la ubicación', 'error');
           }, { enableHighAccuracy: true, timeout: 10000 });
         }
       });
-      
-      document.getElementById('mBtnAvistamientos').addEventListener('click', function() {
-        cargarUbicacionesMobile();
+
+      document.getElementById('mBtnAvistamientos').addEventListener('click', function () {
+        mobileNavigate('mViewAvistamientos');
       });
-      
+
       setTimeout(() => mMap?.invalidateSize(), 100);
     }
 
     async function cargarUbicacionesMobile() {
       if (!mMap) return;
-      
+
       const { data } = await sb.from('ubicaciones')
         .select('*')
         .eq('activo', true)
         .order('fecha_avistamiento', { ascending: false });
-      
+
       (data || []).forEach(u => {
         const marker = L.marker([u.latitud, u.longitud]).addTo(mMap);
-        marker.bindPopup(`<b>${u.nombre}</b><br><small>${u.descripcion || ''}</small>`);
+        marker.bindPopup(`
+          <b>${u.nombre}</b><br>
+          <small>${u.descripcion || ''}</small><br>
+          <a href="#" onclick="cerrarPopupYTrazar(${u.latitud},${u.longitud},'${(u.nombre || 'Destino').replace(/'/g, "\\'")}');return false;"
+             style="color:#C6862E;font-weight:700;font-size:12px;">Trazar ruta →</a>
+        `);
       });
+    }
+
+    function cerrarPopupYTrazar(lat, lng, nombre) {
+      mMap?.closePopup();
+      trazarRuta(lat, lng, nombre);
+    }
+
+    // ============ RUTAS ============
+    function haversineKm(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    function actualizarNotaGeoRutas() {
+      const note = document.getElementById('rutaGeoNote');
+      if (!note) return;
+      if (geoDisponible) {
+        note.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg><span>Mostrando distancias desde tu ubicación actual</span>`;
+      } else {
+        note.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg><span>Activa tu ubicación para ver la distancia a cada punto</span>`;
+      }
+    }
+
+    async function cargarRutasMobile() {
+      const container = document.getElementById('mRutasList');
+      if (!container) return;
+      actualizarNotaGeoRutas();
+
+      const { data, error } = await sb.from('ubicaciones')
+        .select('id, nombre, ciudad, especie, latitud, longitud, cantidad_avistada')
+        .eq('activo', true)
+        .limit(30);
+
+      if (error || !data || data.length === 0) {
+        container.innerHTML = `<div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="6" cy="19" r="2.4"/><circle cx="18" cy="5" r="2.4"/><path d="M8.4 19h7.6a3.2 3.2 0 000-6.4H8a3.2 3.2 0 010-6.4h7.6"/></svg>
+          <p>Aún no hay puntos con ubicación registrada. Registra un avistamiento con tu ubicación activada para crear el primero.</p>
+        </div>`;
+        return;
+      }
+
+      rutasCache = data.map(u => ({
+        ...u,
+        distKm: geoDisponible ? haversineKm(ubicacionActual.lat, ubicacionActual.lng, u.latitud, u.longitud) : null
+      }));
+
+      if (geoDisponible) rutasCache.sort((a, b) => a.distKm - b.distKm);
+
+      container.innerHTML = rutasCache.map(u => `
+        <div class="ruta-item">
+          <div class="ruta-info">
+            <div class="ruta-nombre">${u.nombre}</div>
+            <div class="ruta-meta">${[u.ciudad, u.especie].filter(Boolean).join(' · ') || 'Bolivia'}</div>
+            ${u.distKm !== null ? `<span class="ruta-distancia">${u.distKm < 1 ? Math.round(u.distKm * 1000) + ' m' : u.distKm.toFixed(1) + ' km'} de distancia</span>` : ''}
+          </div>
+          <button class="btn-ruta-trazar" onclick="trazarRuta(${u.latitud},${u.longitud},'${(u.nombre || 'Destino').replace(/'/g, "\\'")}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 18l6-6-6-6"/></svg>
+            Ruta
+          </button>
+        </div>
+      `).join('');
+    }
+
+    async function trazarRuta(lat, lng, nombre) {
+      mobileNavigate('mViewMapa');
+      mostrarSpinner(true);
+
+      let intentos = 0;
+      while (!mMap && intentos < 20) {
+        await new Promise(r => setTimeout(r, 100));
+        intentos++;
+      }
+      if (!mMap) { mostrarSpinner(false); mostrarToast('No se pudo abrir el mapa', 'error'); return; }
+
+      if (routingControl) { mMap.removeControl(routingControl); routingControl = null; }
+
+      const origen = geoDisponible ? ubicacionActual : ubicacionActual;
+
+      routingControl = L.Routing.control({
+        waypoints: [L.latLng(origen.lat, origen.lng), L.latLng(lat, lng)],
+        lineOptions: { styles: [{ color: '#C6862E', weight: 5, opacity: 0.88 }] },
+        createMarker: function (i, wp) {
+          return L.marker(wp.latLng, { icon: i === 0 ? iconoUsuario() : iconoDestino() });
+        },
+        addWaypoints: false,
+        draggableWaypoints: false,
+        fitSelectedRoutes: true,
+        show: false,
+        router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' })
+      }).addTo(mMap);
+
+      routingControl.on('routesfound', function (e) {
+        const r = e.routes[0];
+        const km = (r.summary.totalDistance / 1000).toFixed(1);
+        const min = Math.round(r.summary.totalTime / 60);
+        mostrarRutaInfo(nombre, km, min);
+        mostrarSpinner(false);
+      });
+      routingControl.on('routingerror', function () {
+        mostrarToast('No se pudo calcular la ruta hacia ese punto', 'error');
+        mostrarSpinner(false);
+      });
+    }
+
+    function mostrarRutaInfo(nombre, km, min) {
+      document.getElementById('routeInfoName').textContent = nombre;
+      document.getElementById('routeInfoMeta').textContent = `${km} km · aprox. ${min} min`;
+      document.getElementById('mapHeaderLabel').textContent = 'Ruta activa';
+      document.getElementById('routeInfoCard').classList.add('active');
+    }
+
+    function cerrarRuta() {
+      if (routingControl && mMap) { mMap.removeControl(routingControl); routingControl = null; }
+      document.getElementById('routeInfoCard').classList.remove('active');
+      document.getElementById('mapHeaderLabel').textContent = 'Mapa';
     }
 
     // ============ CLIMA ============
@@ -1626,34 +1497,22 @@
           if (data.current_weather) {
             const w = data.current_weather;
             const temp = Math.round(w.temperature) + "°C";
-            
+
             const mTemp = document.getElementById("mTemp");
             if (mTemp) mTemp.innerText = temp;
-            
+
             const codes = {
-              0: ['Despejado', '☀️'], 
-              1: ['Parcialmente nublado', '⛅'], 
-              2: ['Parcialmente nublado', '⛅'],
-              3: ['Parcialmente nublado', '⛅'], 
-              45: ['Niebla', '🌫️'], 
-              48: ['Niebla', '🌫️'],
-              51: ['Llovizna', '🌦️'], 
-              55: ['Llovizna', '🌦️'], 
-              61: ['Lluvia', '🌧️'],
-              65: ['Lluvia', '🌧️'], 
-              71: ['Nieve', '🌨️'], 
-              77: ['Nieve', '🌨️'],
-              80: ['Lluvia fuerte', '⛈️'], 
-              82: ['Lluvia fuerte', '⛈️'], 
-              95: ['Tormenta', '⛈️'],
-              99: ['Tormenta', '⛈️']
+              0: ['Despejado', '☀️'], 1: ['Parcialmente nublado', '⛅'], 2: ['Parcialmente nublado', '⛅'],
+              3: ['Nublado', '☁️'], 45: ['Niebla', '🌫️'], 48: ['Niebla', '🌫️'],
+              51: ['Llovizna', '🌦️'], 55: ['Llovizna', '🌦️'], 61: ['Lluvia', '🌧️'],
+              65: ['Lluvia', '🌧️'], 71: ['Nieve', '🌨️'], 77: ['Nieve', '🌨️'],
+              80: ['Lluvia fuerte', '⛈️'], 82: ['Lluvia fuerte', '⛈️'], 95: ['Tormenta', '⛈️'], 99: ['Tormenta', '⛈️']
             };
-            
+
             const [desc, icon] = codes[w.weathercode] || ['Variable', '🌤️'];
-            
+
             const mDesc = document.getElementById("mDesc");
             const mWeatherIcon = document.getElementById("mWeatherIcon");
-            
             if (mDesc) mDesc.innerText = desc;
             if (mWeatherIcon) mWeatherIcon.innerHTML = icon;
           }
@@ -1662,9 +1521,8 @@
     }
 
     function navegarAUbicacion(lat, lng) {
-      cerrarModal();
       mobileNavigate('mViewMapa');
-      if (mMap) mMap.setView([lat, lng], 15);
+      setTimeout(() => mMap?.setView([lat, lng], 15), 200);
     }
 
     // ============ UTILIDADES ============
@@ -1675,7 +1533,7 @@
       clearTimeout(t._t);
       t._t = setTimeout(() => t.classList.remove('show'), 3500);
     }
-    
+
     function mostrarSpinner(s) {
       document.getElementById('spinnerOverlay').classList.toggle('active', s);
     }
@@ -1685,66 +1543,58 @@
       const slides = document.getElementById('carouselSlides');
       const dotsContainer = document.getElementById('carouselDots');
       const totalSlides = slides.children.length;
-      
+
       for (let i = 0; i < totalSlides; i++) {
         const dot = document.createElement('div');
         dot.className = `carousel-dot ${i === 0 ? 'active' : ''}`;
         dot.onclick = () => goToSlide(i);
         dotsContainer.appendChild(dot);
       }
-      
+
       function goToSlide(index) {
         carouselIndex = index;
-        slides.style.transform = `translateX(-${index * 100}%)`;
-        document.querySelectorAll('.carousel-dot').forEach((d, i) => {
-          d.classList.toggle('active', i === index);
-        });
+        slides.style.transform = `translate3d(-${index * 100}%,0,0)`;
+        document.querySelectorAll('.carousel-dot').forEach((d, i) => d.classList.toggle('active', i === index));
       }
-      
+
       function nextSlide() {
         carouselIndex = (carouselIndex + 1) % totalSlides;
         goToSlide(carouselIndex);
       }
-      
+
       carouselInterval = setInterval(nextSlide, 5000);
-      
-      let touchStartX = 0;
-      let touchEndX = 0;
-      
+
+      let touchStartX = 0, touchEndX = 0;
       const carousel = document.getElementById('carouselContainer');
       carousel.addEventListener('touchstart', e => {
         touchStartX = e.changedTouches[0].screenX;
         clearInterval(carouselInterval);
       }, { passive: true });
-      
+
       carousel.addEventListener('touchend', e => {
         touchEndX = e.changedTouches[0].screenX;
         const diff = touchStartX - touchEndX;
-        
         if (Math.abs(diff) > 50) {
-          if (diff > 0) {
-            carouselIndex = (carouselIndex + 1) % totalSlides;
-          } else {
-            carouselIndex = (carouselIndex - 1 + totalSlides) % totalSlides;
-          }
+          carouselIndex = diff > 0 ? (carouselIndex + 1) % totalSlides : (carouselIndex - 1 + totalSlides) % totalSlides;
           goToSlide(carouselIndex);
         }
-        
         carouselInterval = setInterval(nextSlide, 5000);
       }, { passive: true });
-      
+
       window.goToSlide = goToSlide;
     }
 
     function initHeaderScroll() {
       const header = document.getElementById('homeHeader');
       if (!header) return;
-      
+      let ticking = false;
       window.addEventListener('scroll', () => {
-        if (window.scrollY > 50) {
-          header.classList.add('scrolled');
-        } else {
-          header.classList.remove('scrolled');
+        if (!ticking) {
+          requestAnimationFrame(() => {
+            header.classList.toggle('scrolled', window.scrollY > 50);
+            ticking = false;
+          });
+          ticking = true;
         }
       }, { passive: true });
     }
@@ -1763,28 +1613,30 @@
     window.abrirModalRegistrarAvistamiento = abrirModalRegistrarAvistamiento;
     window.usarUbicacionActual = usarUbicacionActual;
     window.navegarAUbicacion = navegarAUbicacion;
+    window.trazarRuta = trazarRuta;
+    window.cerrarRuta = cerrarRuta;
+    window.cerrarPopupYTrazar = cerrarPopupYTrazar;
 
     document.addEventListener('DOMContentLoaded', async () => {
-      console.log('Iniciando Ecos de Vuelo Rojo...');
-      
       initCarousel();
       initHeaderScroll();
       cargarSesion();
-      
+
       await cargarAvistamientosMobile();
       await cargarAlertas();
-      
+
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(pos => {
+          ubicacionActual = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          geoDisponible = true;
           obtenerClima(pos.coords.latitude, pos.coords.longitude);
+          actualizarNotaGeoRutas();
         }, () => {
           obtenerClima(ubicacionActual.lat, ubicacionActual.lng);
         }, { enableHighAccuracy: true, timeout: 15000 });
       } else {
         obtenerClima(ubicacionActual.lat, ubicacionActual.lng);
       }
-      
-      console.log('Sistema listo');
     });
   </script>
 </body>
