@@ -228,7 +228,7 @@
     /* ============ APP MÓVIL ============ */
     #mobileApp {
       display: block; min-height: 100vh; background: var(--bg);
-      padding-bottom: calc(84px + var(--safe-bottom));
+      padding-bottom: calc(104px + var(--safe-bottom));
       width: 100%; max-width: 100vw; overflow-x: hidden;
     }
 
@@ -282,30 +282,42 @@
     .mobile-view.active { display: block; animation: viewIn 0.28s var(--ease-out); }
     @keyframes viewIn { from { opacity: 0; transform: translate3d(0,8px,0); } to { opacity: 1; transform: translate3d(0,0,0); } }
 
-    /* ---- Bottom nav: 4 secciones ---- */
+    /* ---- Bottom nav: barra flotante tipo cápsula ---- */
     .mobile-bottom-nav {
-      position: fixed; bottom: 0; left: 0; right: 0; width: 100%;
-      background: rgba(255,255,255,0.98); backdrop-filter: blur(16px);
-      border-top: 1px solid var(--border);
+      position: fixed; left: 14px; right: 14px; bottom: calc(14px + var(--safe-bottom));
+      background: rgba(27,27,47,0.97); backdrop-filter: blur(18px);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--r-pill);
       display: grid; grid-template-columns: repeat(4, 1fr);
-      z-index: 1000; box-shadow: 0 -6px 20px rgba(27,27,47,0.06);
-      padding-bottom: var(--safe-bottom);
+      align-items: center;
+      z-index: 1000; box-shadow: 0 16px 34px rgba(27,27,47,0.32);
+      padding: 8px 8px;
+      will-change: transform;
     }
     .mobile-nav-item {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 3px; cursor: pointer; color: #a6a49b;
-      transition: color 0.2s var(--ease-out);
-      padding: 9px 0; position: relative; min-height: 58px; border: none; background: transparent;
+      gap: 2px; cursor: pointer; color: #8f8da6;
+      transition: color 0.25s var(--ease-out);
+      padding: 4px 0 5px; position: relative; min-height: 52px; border: none; background: transparent;
     }
-    .mobile-nav-item svg { width: 22px; height: 22px; transition: transform 0.2s var(--ease-spring); display: block; }
-    .mobile-nav-item span { font-family: 'Sora', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.1px; line-height: 1.2; }
-    .mobile-nav-item.active { color: var(--accent); }
-    .mobile-nav-item.active svg { transform: translateY(-1px) scale(1.05); }
-    .mobile-nav-item.active::after {
-      content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-      width: 28px; height: 3px; background: var(--accent); border-radius: 0 0 3px 3px;
+    .nav-icon-wrap {
+      width: 42px; height: 28px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.3s var(--ease-spring), transform 0.25s var(--ease-spring), box-shadow 0.3s var(--ease-out);
     }
-    .mobile-nav-item:active { background: rgba(214, 72, 63, 0.06); }
+    .mobile-nav-item svg { width: 20px; height: 20px; display: block; transition: transform 0.2s var(--ease-spring); }
+    .mobile-nav-item span {
+      font-family: 'Sora', sans-serif; font-size: 9.5px; font-weight: 700;
+      letter-spacing: 0.15px; line-height: 1.2; margin-top: 3px; opacity: 0.9;
+    }
+    .mobile-nav-item.active { color: #ffffff; }
+    .mobile-nav-item.active .nav-icon-wrap {
+      background: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(214, 72, 63, 0.45);
+    }
+    .mobile-nav-item:nth-child(4).active .nav-icon-wrap { background: var(--route); box-shadow: 0 8px 16px rgba(198,134,46,0.45); }
+    .mobile-nav-item:active .nav-icon-wrap { transform: scale(0.88); }
 
     /* ---- Carousel ---- */
     .carousel-container {
@@ -435,9 +447,36 @@
     }
     .mobile-map { height: 100%; width: 100%; }
 
+    /* ---- Punto de ubicación actual (marcador propio, con pulso tipo radar) ---- */
+    .user-location-marker { position: relative; width: 22px; height: 22px; }
+    .user-location-marker .ulm-halo {
+      position: absolute; inset: 0; margin: auto; width: 22px; height: 22px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(62,124,140,0.35) 0%, rgba(62,124,140,0) 70%);
+      animation: ulmBreathe 2.6s ease-in-out infinite;
+    }
+    .user-location-marker .ulm-pulse {
+      position: absolute; inset: 0; margin: auto; width: 14px; height: 14px; border-radius: 50%;
+      background: var(--teal); opacity: 0.55;
+      animation: ulmPulse 2.2s cubic-bezier(0.22,1,0.36,1) infinite;
+    }
+    .user-location-marker .ulm-core {
+      position: absolute; inset: 0; margin: auto; width: 15px; height: 15px; border-radius: 50%;
+      background: var(--teal); border: 2.5px solid #ffffff;
+      box-shadow: 0 3px 10px rgba(27,27,47,0.4);
+      z-index: 2;
+    }
+    @keyframes ulmPulse {
+      0% { transform: scale(1); opacity: 0.55; }
+      75%, 100% { transform: scale(2.6); opacity: 0; }
+    }
+    @keyframes ulmBreathe {
+      0%, 100% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.15); opacity: 1; }
+    }
+
     .map-controls {
       display: flex; gap: 8px; padding: 0 16px; align-items: center;
-      position: fixed; bottom: calc(75px + var(--safe-bottom)); left: 0; right: 0; z-index: 10;
+      position: fixed; bottom: calc(96px + var(--safe-bottom)); left: 0; right: 0; z-index: 10;
       pointer-events: none;
     }
     .map-control-btn {
@@ -452,7 +491,7 @@
     .map-control-btn svg { width: 16px; height: 16px; }
 
     .route-info-card {
-      position: fixed; left: 16px; right: 16px; bottom: calc(140px + var(--safe-bottom)); z-index: 11;
+      position: fixed; left: 16px; right: 16px; bottom: calc(161px + var(--safe-bottom)); z-index: 11;
       background: white; border-radius: var(--r-lg); padding: 16px 18px; box-shadow: var(--shadow-lg);
       display: flex; align-items: center; gap: 14px;
       transform: translate3d(0, 30px, 0); opacity: 0; visibility: hidden; pointer-events: none;
@@ -685,8 +724,10 @@
           Mi ubicación
         </button>
         <button class="map-control-btn secondary" id="mBtnAvistamientos">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8m0 0v7m0-7h-7"/></svg>
-          Avistamientos
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3M3 16v3a2 2 0 002 2h3m11-5v3a2 2 0 01-2 2h-3"/>
+          </svg>
+          Ver puntos
         </button>
       </div>
     </div>
@@ -751,26 +792,26 @@
     <!-- Bottom Navigation: 4 secciones -->
     <div class="mobile-bottom-nav">
       <button class="mobile-nav-item active" onclick="mobileNavigate('mViewInicio')" id="mNavInicio">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <span class="nav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-        </svg>
+        </svg></span>
         <span>Inicio</span>
       </button>
       <button class="mobile-nav-item" onclick="mobileNavigate('mViewMapa')" id="mNavMapa">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <span class="nav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
-        </svg>
+        </svg></span>
         <span>Mapa</span>
       </button>
       <button class="mobile-nav-item" onclick="mobileNavigate('mViewAvistamientos')" id="mNavAvistamientos">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8m0 0v7m0-7h-7"/></svg>
+        <span class="nav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8m0 0v7m0-7h-7"/></svg></span>
         <span>Avistamientos</span>
       </button>
       <button class="mobile-nav-item" onclick="mobileNavigate('mViewRutas')" id="mNavRutas">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <span class="nav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="6" cy="19" r="2.4"/><circle cx="18" cy="5" r="2.4"/>
           <path d="M8.4 19h7.6a3.2 3.2 0 000-6.4H8a3.2 3.2 0 010-6.4h7.6"/>
-        </svg>
+        </svg></span>
         <span>Rutas</span>
       </button>
     </div>
@@ -796,14 +837,22 @@
     let carouselInterval;
     let routingControl = null;
     let rutasCache = [];
+    let ubicacionMarkers = [];
 
     const iconoUsuario = () => L.divIcon({
-      html: '<div style="width:16px;height:16px;background:#3E7C8C;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.4);"></div>',
-      iconSize: [16, 16], iconAnchor: [8, 8]
+      className: '',
+      html: '<div class="user-location-marker"><div class="ulm-halo"></div><div class="ulm-pulse"></div><div class="ulm-core"></div></div>',
+      iconSize: [22, 22], iconAnchor: [11, 11]
     });
     const iconoDestino = () => L.divIcon({
+      className: '',
       html: '<div style="width:18px;height:18px;background:#C6862E;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.4);"></div>',
       iconSize: [18, 18], iconAnchor: [9, 18]
+    });
+    const iconoPunto = () => L.divIcon({
+      className: '',
+      html: '<div style="width:16px;height:16px;background:#D6483F;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.35);"></div>',
+      iconSize: [16, 16], iconAnchor: [8, 16], popupAnchor: [0, -14]
     });
 
     // ============ NAVEGACIÓN ============
@@ -1346,7 +1395,7 @@
       });
 
       document.getElementById('mBtnAvistamientos').addEventListener('click', function () {
-        mobileNavigate('mViewAvistamientos');
+        ampliarMapaAAvistamientos();
       });
 
       setTimeout(() => mMap?.invalidateSize(), 100);
@@ -1360,15 +1409,30 @@
         .eq('activo', true)
         .order('fecha_avistamiento', { ascending: false });
 
+      ubicacionMarkers.forEach(m => mMap.removeLayer(m));
+      ubicacionMarkers = [];
+
       (data || []).forEach(u => {
-        const marker = L.marker([u.latitud, u.longitud]).addTo(mMap);
+        const marker = L.marker([u.latitud, u.longitud], { icon: iconoPunto() }).addTo(mMap);
         marker.bindPopup(`
           <b>${u.nombre}</b><br>
           <small>${u.descripcion || ''}</small><br>
           <a href="#" onclick="cerrarPopupYTrazar(${u.latitud},${u.longitud},'${(u.nombre || 'Destino').replace(/'/g, "\\'")}');return false;"
              style="color:#C6862E;font-weight:700;font-size:12px;">Trazar ruta →</a>
         `);
+        ubicacionMarkers.push(marker);
       });
+    }
+
+    function ampliarMapaAAvistamientos() {
+      if (!mMap) return;
+      if (!ubicacionMarkers.length) {
+        mostrarToast('Aún no hay avistamientos con ubicación en el mapa', 'info');
+        return;
+      }
+      const group = L.featureGroup(ubicacionMarkers);
+      mMap.flyToBounds(group.getBounds().pad(0.25), { duration: 0.6 });
+      mostrarToast(`Mostrando ${ubicacionMarkers.length} punto${ubicacionMarkers.length === 1 ? '' : 's'} de avistamiento`, 'success');
     }
 
     function cerrarPopupYTrazar(lat, lng, nombre) {
